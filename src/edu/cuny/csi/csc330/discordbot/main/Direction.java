@@ -12,7 +12,7 @@ public enum Direction {
 
 	public Direction getNextRandom() {
 		 	
-			int direction = Randomizer.generateInt(1, 8); 
+			int direction = Randomizer.generateInt(1, 4); 
 		
 			// 1 = south,  2 = west, 3 = north, 4 = east 
 			if(direction == 1) { // south 

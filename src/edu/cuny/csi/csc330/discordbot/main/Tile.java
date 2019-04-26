@@ -9,6 +9,7 @@ public class Tile {
 	private int position2; //Position 2 of tile
 	private String faction; //Current ruling faction (Will always be Unclaimed by default)
 	//List of players that are currently on the tile
+	//Battle occurring on the tile
 	
 	public Tile() {
 		this.faction = "Unclaimed";
