@@ -22,8 +22,9 @@ public class Player {
 		generateFaction();
 		Unit unit1 = new Unit(faction, factionID);
 		Unit unit2 = new Unit(faction, factionID);
-		party.add(unit1);
-		party.add(unit2);
+		this.party.add(unit1);
+		this.party.add(unit2);
+		this.ap = 3;
 		
 	}
 	
@@ -34,8 +35,9 @@ public class Player {
 		generateFaction();
 		Unit unit1 = new Unit(faction, factionID);
 		Unit unit2 = new Unit(faction, factionID);
-		party.add(unit1);
-		party.add(unit2);
+		this.party.add(unit1);
+		this.party.add(unit2);
+		this.ap = 3;
 		
 	}
 
