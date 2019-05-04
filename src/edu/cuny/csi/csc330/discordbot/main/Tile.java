@@ -1,15 +1,15 @@
 package edu.cuny.csi.csc330.discordbot.main;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class Tile {
+public class Tile implements Comparable<Tile>{
 
 	private int position1; //Position 1 of tile 
 	private int position2; //Position 2 of tile
 	private String faction; //Current ruling faction (Will always be Unclaimed by default)
-	//List of players that are currently on the tile
-	//Battle occurring on the tile
+	private boolean rest; //Can you rest on this tile?
 	
 	public Tile() {
 		this.faction = "Unclaimed";
@@ -27,7 +27,7 @@ public class Tile {
 	//toString
 	@Override
 	public String toString() {
-		return "Tile [position1=" + position1 + ", position2=" + position2 + ", faction=" + faction + "]";
+		return "Tile: " + position1 + "-" + position2 + "  Faction: " + faction;
 	}
 
 	//Getters/Setters
@@ -48,6 +48,32 @@ public class Tile {
 	}	
 	public void setFaction(String faction) {
 		this.faction = faction;
+	}
+	
+	public boolean isRest() {
+		return rest;
+	}
+	public void setRest(boolean rest) {
+		this.rest = rest;
+	}
+
+	public boolean goesFirst(Tile otherTile) { //Used for sorting
+		
+		if(this.position1 < otherTile.getPosition1()) {
+			
+			return true;
+			
+		} else if ((this.position1 == otherTile.getPosition1()) && (this.position2 < otherTile.getPosition2())) {
+			
+			return true;
+			
+		} else {
+			
+			return false;
+			
+		}
+		
+		
 	}
 	
 	//hashCode and equals
@@ -80,6 +106,25 @@ public class Tile {
 			return false;
 		return true;
 	}
+	
+	public int compareTo(Tile anotherTile) {
+		
+		if((this.position1 == anotherTile.position1) && (this.position2 == anotherTile.position2)) { //Equals
+			
+			return 0;
+			
+		} else if ((this.position1 < anotherTile.position1) || (this.position1 == anotherTile.position1 && this.position2 < anotherTile.position2)) { //Less than
+			
+			return -1;
+			
+		} else { //Greater than
+			
+			return 1;
+			
+		}
+		
+		
+	}
 
 	/**
 	 * @param args
@@ -105,7 +150,7 @@ public class Tile {
 		
 		
 		// Test Sorting ... for lab5 req 
-		Set<Tile> set = new TreeSet<Tile>(); 
+		Set<Tile> set = new HashSet<Tile>(); 
 		set.add(corner1);
 		set.add(corner2);
 		set.add(corner3);

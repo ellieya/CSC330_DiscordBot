@@ -1,25 +1,43 @@
 package edu.cuny.csi.csc330.discordbot.main;
 
+import java.util.ArrayList;
+
 public class Player {
 
 	private String name; //Player name
-	private int hp; //Player health
+	private Long ID; //Player ID
 	private int ap; //Player action points
-	private int spd; //Player spd
-	private int defPower; //Player's defensive stat
-	private int offPower; //Player's offensive stat
-	private Faction faction; //Faction the player is apart of
+	private String faction; //Faction the player is apart of
+	private int factionID; //Faction ID
+	ArrayList<Unit> party = new ArrayList<Unit>(); //Party of units 
 
 	public Player() {
 		
 	}
 	
-	public Player(String name) {
+	public Player(Long ID) {
+
+		this.name = "Player " + ID;
+		this.ID = ID;
+		generateFaction();
+		Unit unit1 = new Unit(faction, factionID);
+		Unit unit2 = new Unit(faction, factionID);
+		this.party.add(unit1);
+		this.party.add(unit2);
+		this.ap = 3;
+		
+	}
+	
+	public Player(String name, Long ID) {
 
 		this.name = name;
-		this.defPower = 10;
-		this.offPower = 10;
+		this.ID = ID;
 		generateFaction();
+		Unit unit1 = new Unit(faction, factionID);
+		Unit unit2 = new Unit(faction, factionID);
+		this.party.add(unit1);
+		this.party.add(unit2);
+		this.ap = 3;
 		
 	}
 
@@ -31,45 +49,64 @@ public class Player {
 		this.name = name;
 	}
 
-	public int getDefPower() {
-		return defPower;
-	}
-
-	public void setDefPower(int defPower) {
-		this.defPower = defPower;
-	}
-
-	public int getOffPower() {
-		return offPower;
-	}
-
-	public void setOffPower(int offPower) {
-		this.offPower = offPower;
-	}
-
-	public Faction getFaction() {
+	public String getFaction() {
 		return faction;
 	}
 
-	public void setFaction(Faction faction) {
+	public void setFaction(String faction) {
 		this.faction = faction;
 	}
 	
+	public Long getID() {
+		return ID;
+	}
+
+	public void setID(Long iD) {
+		ID = iD;
+	}
+
+	public int getAp() {
+		return ap;
+	}
+
+	public void setAp(int ap) {
+		this.ap = ap;
+	}
+
+	public int getFactionID() {
+		return factionID;
+	}
+
+	public void setFactionID(int factionID) {
+		this.factionID = factionID;
+	}
+
+	public ArrayList<Unit> getParty() {
+		return party;
+	}
+
+	public void setParty(ArrayList<Unit> party) {
+		this.party = party;
+	}
+
 	public void generateFaction() {
 		
 		int factionNum = Randomizer.generateInt(1, 3); //Generate a number from 1-3
 		
 		if(factionNum == 1) {
 			
-			this.faction = new Faction("Hawks"); //Player will be in Hawks
+			this.faction = "Hawks"; //Player will be in Hawks
+			this.factionID = 1; //Set ID
 			
 		} else if (factionNum == 2) {
 			
-			this.faction = new Faction("Owls"); //Player will be in Owls
+			this.faction = "Owls"; //Player will be in Owls
+			this.factionID = 2; //Set ID
 			
 		} else {
 			
-			this.faction = new Faction("Root"); //Player will be in Root
+			this.faction = "Root"; //Player will be in Root
+			this.factionID = 3; //Set ID
 			
 		}
 		
