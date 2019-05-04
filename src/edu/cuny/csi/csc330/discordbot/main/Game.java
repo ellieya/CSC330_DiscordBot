@@ -104,7 +104,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 			partySize = entry.getValue().getParty().size(); // Get size of party
 
-			for (int i = 0; i <= partySize; i++) {
+			for (int i = 0; i < partySize; i++) {
 
 				x = entry.getValue().getParty().get(i).getPosition1(); // Position 1 of unit
 				y = entry.getValue().getParty().get(i).getPosition2(); // Position 2 of unit
@@ -112,7 +112,7 @@ public class Game { // Almost everything goes here! The main Game Class
 				Coordinate tempCoordinate = new Coordinate(x, y);
 
 				if (gameMap.get(tempCoordinate).isRest()) { // Check if tile the unit on is a rest tile
-					
+
 					int unitHp = entry.getValue().getParty().get(i).getCurHP(); // Get Unit's current HP
 
 					double hpGain = Math.floor((entry.getValue().getParty().get(i).getHp()) / (2)); // Calculate
@@ -132,14 +132,120 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void checkBattle() {
 
-		Iterator<Map.Entry<Coordinate, Tile>> itr = this.gameMap.entrySet().iterator();
+		int partySize = 0;
+		int partySize2 = 0;
+		String friendlyFaction = "";
+		boolean noEnemy = true;
 
-		while (itr.hasNext()) // Iterate through Map and set AP back
+		Iterator<Map.Entry<Long, Player>> itr = this.playerMap.entrySet().iterator();
+
+		while (itr.hasNext()) // Iterate through players
 		{
-			Map.Entry<Coordinate, Tile> entry = itr.next();
-			// entry.getKey().setAp(MAX_AP);
+			Map.Entry<Long, Player> entry = itr.next();
+			ArrayList<Player> battlePlayers = new ArrayList<Player>(); // Create new list of players
+			ArrayList<Unit> battleUnits = new ArrayList<Unit>(); // Create new list of units
 
-		}
+			partySize = entry.getValue().getParty().size(); // Get size of party
+
+			for (int i = 1; i <= partySize; i++) { // Go through player's party
+
+				int playerX = entry.getValue().getParty().get(i).getPosition1();
+				int playerY = entry.getValue().getParty().get(i).getPosition2();
+
+				// Get the coordinate the unit is on and all adjacent coordinates
+				Coordinate tempCoordinate = new Coordinate(playerX, playerY);
+				Coordinate adjCoordinate1 = new Coordinate(playerX, playerY - 1);
+				Coordinate adjCoordinate2 = new Coordinate(playerX, playerY + 1);
+				Coordinate adjCoordinate3 = new Coordinate(playerX + 1, playerY);
+				Coordinate adjCoordinate4 = new Coordinate(playerX - 1, playerY);
+
+				Tile unitTile1 = gameMap.get(tempCoordinate); // Get tile the unit is on
+				Tile adjTile1 = gameMap.get(adjCoordinate1);
+				Tile adjTile2 = gameMap.get(adjCoordinate2);
+				Tile adjTile3 = gameMap.get(adjCoordinate3);
+				Tile adjTile4 = gameMap.get(adjCoordinate4);
+
+				// Compare other players and their units
+				Iterator<Map.Entry<Long, Player>> itr2 = this.playerMap.entrySet().iterator();
+
+				while (itr2.hasNext()) // Iterate through other players to compare
+				{
+					Map.Entry<Long, Player> entry2 = itr2.next();
+
+					partySize2 = entry2.getValue().getParty().size(); // Get size of party
+
+					for (int j = 1; j <= partySize2; j++) { // Go through player's party
+
+						int playerX2 = entry2.getValue().getParty().get(i).getPosition1();
+						int playerY2 = entry2.getValue().getParty().get(i).getPosition2();
+
+						Coordinate tempCoordinate2 = new Coordinate(playerX2, playerY2);
+
+						Tile unitTile2 = gameMap.get(tempCoordinate2); // Get tile the unit is on
+
+						// If unit is on an adjacent tile to original unit or on the same tile
+						if (unitTile2.equals(unitTile1) || unitTile2.equals(adjTile1) || unitTile2.equals(adjTile2)
+								|| unitTile1.equals(adjTile3) || unitTile1.equals(adjTile4)) {
+
+							if (!entry.getValue().getParty().get(i).isInBattle()) { // If the original unit is not
+																					// already engaged in battle
+
+								if (!entry.getValue().isInBattle()) { // If original player is not in battle
+									entry.getValue().setInBattle(true);
+									battlePlayers.add(entry.getValue()); // Add original player to the list
+
+									friendlyFaction = entry.getValue().getFaction(); // Faction of original player
+
+								}
+
+								entry.getValue().getParty().get(i).setInBattle(true);
+								battleUnits.add(entry.getValue().getParty().get(i)); // Add original unit to the list
+
+							} // Add original unit case end
+
+							if (!entry2.getValue().getParty().get(j).isInBattle()) { // If opposing unit is
+
+								if (!entry2.getValue().isInBattle()) { // If opposing player is not in battle
+									entry2.getValue().setInBattle(true);
+									battlePlayers.add(entry2.getValue()); // Add opposing player to the list
+								}
+
+								entry2.getValue().getParty().get(j).setInBattle(true);
+								battleUnits.add(entry2.getValue().getParty().get(j)); // Add opposing unit to the list
+
+							}
+
+						} // Adjacent case end
+
+					} // End party2 iteration
+
+				} // Stop iterating through other players
+
+			} // End party iteration
+
+			if (!battleUnits.isEmpty()) {
+				for (int i = 1; i <= battleUnits.size(); i++) { // Make sure there is an enemy in units list
+
+					if (!battleUnits.get(i).getFaction().equals(friendlyFaction)) { // If you find a unit of the
+																					// opposite faction
+
+						noEnemy = false; // Set noEnemy flag to false
+
+					}
+				}
+			}
+
+			if (!battleUnits.isEmpty() && noEnemy == false) { // If units were sent into battle and there is an enemy
+																// faction present
+
+				Battle newBattle = new Battle(battlePlayers, battleUnits); // Create a new battle instance
+				this.battleQueue.add(newBattle); // Add it to the battleQueue
+
+			}
+
+			noEnemy = true; // Set flag back to true
+
+		} // Stop comparing player to others, move onto the next one
 
 	} // End checkBattle
 

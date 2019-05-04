@@ -13,11 +13,13 @@ public class Unit {
 	private int factionID; //Unit's faction ID
 	private int position1; //Position 1 of the unit
 	private int position2; //Position 2 of the unit
+	private boolean inBattle; //Is the Unit in battle?
 
 	public Unit(String faction, int factionID) {
 		
 		this.faction = faction;
 		this.factionID = factionID;
+		inBattle = false;
 		generateStats();
 		
 		if (factionID == 1) { //Hawks start at (0,0)
@@ -130,6 +132,14 @@ public class Unit {
 
 	public void setPosition2(int position2) {
 		this.position2 = position2;
+	}
+
+	public boolean isInBattle() {
+		return inBattle;
+	}
+
+	public void setInBattle(boolean inBattle) {
+		this.inBattle = inBattle;
 	}
 
 	public void generateStats() { //Generate stats for unit and set them

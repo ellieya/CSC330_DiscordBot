@@ -10,6 +10,7 @@ public class Player {
 	private String faction; //Faction the player is apart of
 	private int factionID; //Faction ID
 	protected ArrayList<Unit> party = new ArrayList<Unit>(); //Party of units 
+	private boolean inBattle; //Is the Player in battle?
 
 	public Player() {
 		
@@ -25,6 +26,7 @@ public class Player {
 		this.party.add(unit1);
 		this.party.add(unit2);
 		this.ap = 3;
+		this.inBattle = false;
 		
 	}
 	
@@ -38,6 +40,7 @@ public class Player {
 		this.party.add(unit1);
 		this.party.add(unit2);
 		this.ap = 3;
+		this.inBattle = false;
 		
 	}
 
@@ -87,6 +90,14 @@ public class Player {
 
 	public void setParty(ArrayList<Unit> party) {
 		this.party = party;
+	}
+
+	public boolean isInBattle() {
+		return inBattle;
+	}
+
+	public void setInBattle(boolean inBattle) {
+		this.inBattle = inBattle;
 	}
 
 	public void generateFaction() {
