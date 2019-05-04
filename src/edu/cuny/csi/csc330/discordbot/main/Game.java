@@ -1,6 +1,5 @@
 package edu.cuny.csi.csc330.discordbot.main;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ public class Game { // Almost everything goes here! The main Game Class
 	private static int MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
 	private static int MAX_BATTLE_TURNS = 5;
+	private static int MAX_AP = 3; //Max action points for a user
 
 	// Other private data members
 	private Map<Tile, String> gameMap = new HashMap<Tile, String>(); // The Game Map to be navigated by player units
@@ -87,8 +87,12 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End runBattle
 
-	public void restoreAP() {
+	public void restoreAP() { //restoreAP for every Player in-game
 
+		for (Player player : playerList) { //For each player in playerList
+		    player.setAp(MAX_AP); //Set ap back to max
+		}
+		
 	} // End restoreAP
 
 	public int getTurnCount() {
