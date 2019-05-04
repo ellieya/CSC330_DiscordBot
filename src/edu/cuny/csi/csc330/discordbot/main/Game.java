@@ -21,7 +21,8 @@ public class Game { // Almost everything goes here! The main Game Class
 	private static int MAX_AP = 3; // Max action points for a user
 
 	// Other private data members
-	private Map<Tile, String> gameMap = new HashMap<Tile, String>(); // The Game Map to be navigated by player units
+	private Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
+																				// units
 	private Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
 
 	private Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For searching)
@@ -108,40 +109,37 @@ public class Game { // Almost everything goes here! The main Game Class
 				x = entry.getValue().getParty().get(i).getPosition1(); // Position 1 of unit
 				y = entry.getValue().getParty().get(i).getPosition2(); // Position 2 of unit
 
-				Iterator<Map.Entry<Tile, String>> itr2 = this.gameMap.entrySet().iterator();
+				Coordinate tempCoordinate = new Coordinate(x, y);
 
-				while (itr2.hasNext()) // Find the tile the Unit is currently on
-				{
-					Map.Entry<Tile, String> entry2 = itr2.next();
+				if (gameMap.get(tempCoordinate).isRest()) { // Check if tile the unit on is a rest tile
+					
+					int unitHp = entry.getValue().getParty().get(i).getCurHP(); // Get Unit's current HP
 
-					if (entry2.getKey().getPosition1() == x && entry2.getKey().getPosition2() == y) { // If it's the
-																										// tile
+					double hpGain = Math.floor((entry.getValue().getParty().get(i).getHp()) / (2)); // Calculate
+																									// HP Gain
 
-						if (entry2.getKey().isRest()) { // Check if the Unit's tile is a rest tile
+					entry.getValue().getParty().get(i).setCurHP((int) (unitHp + hpGain)); // Set HP to current +
+																							// gain
+				} // Tile check end
 
-							int unitHp = entry.getValue().getParty().get(i).getCurHP(); // Get Unit's current HP
+			} // End of party iteration
 
-							double hpGain = Math.floor((entry.getValue().getParty().get(i).getHp()) / (2)); // Calculate
-																											// HP Gain
-
-							entry.getValue().getParty().get(i).setCurHP((int) (unitHp + hpGain)); // Set HP to current +
-																									// gain
-
-						}
-
-					}
-
-				} // Done iterating through tiles
-
-			} // Done iterating through party units
-
-		} // Done iterating through Players in playerMap
+		} // Done iterating through tiles
 
 		this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
 
 	} // End runAllMapEvents
 
 	public void checkBattle() {
+
+		Iterator<Map.Entry<Coordinate, Tile>> itr = this.gameMap.entrySet().iterator();
+
+		while (itr.hasNext()) // Iterate through Map and set AP back
+		{
+			Map.Entry<Coordinate, Tile> entry = itr.next();
+			// entry.getKey().setAp(MAX_AP);
+
+		}
 
 	} // End checkBattle
 
@@ -190,7 +188,9 @@ public class Game { // Almost everything goes here! The main Game Class
 
 				Tile tempTile = new Tile(i, j); // Create a temporary Tile object
 
-				this.gameMap.put(tempTile, "Unclaimed"); // Add Tile to map
+				Coordinate tempCoordinate = new Coordinate(i, j);
+
+				this.gameMap.put(tempCoordinate, tempTile); // Add Tile to map
 				this.gameSet.add(tempTile); // Add Tile to set
 
 			}

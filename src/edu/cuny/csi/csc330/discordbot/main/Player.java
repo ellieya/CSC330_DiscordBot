@@ -9,7 +9,7 @@ public class Player {
 	private int ap; //Player action points
 	private String faction; //Faction the player is apart of
 	private int factionID; //Faction ID
-	ArrayList<Unit> party = new ArrayList<Unit>(); //Party of units 
+	protected ArrayList<Unit> party = new ArrayList<Unit>(); //Party of units 
 
 	public Player() {
 		
