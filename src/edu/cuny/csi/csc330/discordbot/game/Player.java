@@ -21,8 +21,8 @@ public class Player {
 		this.name = "Player " + ID;
 		this.ID = ID;
 		generateFaction();
-		Unit unit1 = new Unit(faction, factionID);
-		Unit unit2 = new Unit(faction, factionID);
+		Unit unit1 = new Unit(faction, factionID, ID);
+		Unit unit2 = new Unit(faction, factionID, ID);
 		this.party.add(unit1);
 		this.party.add(unit2);
 		this.ap = 3;
@@ -35,8 +35,8 @@ public class Player {
 		this.name = name;
 		this.ID = ID;
 		generateFaction();
-		Unit unit1 = new Unit(faction, factionID);
-		Unit unit2 = new Unit(faction, factionID);
+		Unit unit1 = new Unit(faction, factionID, ID);
+		Unit unit2 = new Unit(faction, factionID, ID);
 		this.party.add(unit1);
 		this.party.add(unit2);
 		this.ap = 3;
