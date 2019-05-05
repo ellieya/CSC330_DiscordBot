@@ -317,12 +317,12 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		if (!battleQueue.isEmpty()) { //If battleQueue is not empty
 
-			Iterator entry = this.battleQueue.iterator();
+			Iterator<Battle> entry = this.battleQueue.iterator();
 
 			while (entry.hasNext()) { //Iterate through all battles on the queue
 
 				// Run the battle
-				// entry.next().runBattle();
+				entry.next().runBattle();
 
 			}
 
