@@ -6,11 +6,17 @@ public class MapTileEvents {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static Unit restEvent(Unit someUnit) {
+	
+	/**
+	 * Returns updated HP value
+	 */
+	public static int restEvent(Unit someUnit) {
 		
+		int unitHp = someUnit.getCurHP(); // Get Unit's current HP
+		int hpGain = (int) Math.floor(someUnit.getHp() / 2); // Calculate HP gain
 		
-
-		return someUnit;
+		return unitHp + hpGain; // Return HP: current + gain
+		
 		}
 
 }

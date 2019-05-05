@@ -15,7 +15,7 @@ import java.util.Iterator;
 public class Game { // Almost everything goes here! The main Game Class
 
 	// Constants
-	private static int MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
+	private static int MAX_MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
 	private static int MAX_BATTLE_TURNS = 5;
 	private static int MAX_AP = 3; // Max action points for a user
@@ -32,11 +32,8 @@ public class Game { // Almost everything goes here! The main Game Class
 	private Queue<Battle> battleQueue = new LinkedList<Battle>();
 	private int turnCount;
 
-	public Game() { // Game object has been created
-
-		System.out.println("A new game has been created!");
-
-	} // End of Game
+	private Game() {
+	}
 
 	public Game(Queue<Long> playerQueue) { // Game object has been created
 
@@ -171,23 +168,22 @@ public class Game { // Almost everything goes here! The main Game Class
 			Map.Entry<Long, Player> entry = itr.next();
 
 			partySize = entry.getValue().getParty().size(); // Get size of party
+			Unit unitHolder;
 
 			for (int i = 0; i < partySize; i++) {
-
-				x = entry.getValue().getParty().get(i).getPosition1(); // Position 1 of unit
-				y = entry.getValue().getParty().get(i).getPosition2(); // Position 2 of unit
+				
+				unitHolder = entry.getValue().getParty().get(i);
+				
+				// TODO Revise position1 and position2 to Coordinate datatype
+				x = unitHolder.getPosition1(); // Position 1 of unit
+				y = unitHolder.getPosition2(); // Position 2 of unit
 
 				Coordinate tempCoordinate = new Coordinate(x, y);
-
+				
+				
+				// TODO if we have time we should adjust map event flags on Tile into a boolean array
 				if (gameMap.get(tempCoordinate).isRest()) { // Check if tile the unit on is a rest tile
-
-					int unitHp = entry.getValue().getParty().get(i).getCurHP(); // Get Unit's current HP
-
-					double hpGain = Math.floor((entry.getValue().getParty().get(i).getHp()) / (2)); // Calculate
-																									// HP Gain
-
-					entry.getValue().getParty().get(i).setCurHP((int) (unitHp + hpGain)); // Set HP to current +
-																							// gain
+					unitHolder.setCurHP(MapTileEvents.restEvent(unitHolder));
 				} // Tile check end
 
 			} // End of party iteration
@@ -369,9 +365,9 @@ public class Game { // Almost everything goes here! The main Game Class
 		int i = 1;
 		int j = 1;
 
-		for (i = 1; i <= MAP_RANGE; i++) { // Our map has dimensions 5 x 5
+		for (i = 1; i <= MAX_MAP_RANGE; i++) { // Our map has dimensions 5 x 5
 
-			for (j = 1; j <= MAP_RANGE; j++) {
+			for (j = 1; j <= MAX_MAP_RANGE; j++) {
 
 				Tile tempTile = new Tile(i, j); // Create a temporary Tile object
 

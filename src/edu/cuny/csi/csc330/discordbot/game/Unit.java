@@ -1,5 +1,7 @@
 package edu.cuny.csi.csc330.discordbot.game;
 
+// TODO Revise position1 and position2 to Coordinate datatype
+
 public class Unit {
 
 	private int name; //Unit name/ID
