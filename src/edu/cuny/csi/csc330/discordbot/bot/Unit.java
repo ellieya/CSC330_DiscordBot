@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.game;
+package edu.cuny.csi.csc330.discordbot.bot;
 
 // TODO Revise position1 and position2 to Coordinate datatype
 

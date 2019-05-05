@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.game;
+package edu.cuny.csi.csc330.discordbot.bot;
 
 public class Coordinate implements Comparable<Coordinate> {
 	private int x;
