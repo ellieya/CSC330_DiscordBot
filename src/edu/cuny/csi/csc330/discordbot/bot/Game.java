@@ -25,7 +25,8 @@ public class Game { // Almost everything goes here! The main Game Class
 																				// units
 	protected Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
 
-	protected Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For searching)
+	protected Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For
+																			// searching)
 	protected ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
 
 	protected Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
@@ -41,11 +42,11 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		this.playerQueue.addAll(playerQueue); // Set playerQueue equal to queue from BotMain
 
-		populatePlayerList(); //Populate list of players
-		
+		populatePlayerList(); // Populate list of players
+
 	} // End of Game (One argument constructor)
 
-	public void endGame() {
+	public String endGame() {
 
 		// Final Scores
 		int hawksScore = 0;
@@ -104,12 +105,9 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		}
 
-		System.out.println("Final Score:"); // Display final results
-		System.out.println("Hawks: " + hawksScore); // Display hawksScore
-		System.out.println("Owls: " + owlsScore); // Display owlsScore
-		System.out.println("Root: " + rootScore); // Display rootScore
-
-		System.out.println("Thanks for playing!"); // Say thank you
+		//Final message
+		return "Final Score:" + "\nHawks: " + hawksScore + "\nOwls: " + owlsScore + "\nRoot: " + rootScore
+				+ "\nThanks for playing!";
 
 	} // End of endGame
 
@@ -131,8 +129,8 @@ public class Game { // Almost everything goes here! The main Game Class
 
 				this.playerList.add(newPlayer); // Add player to Game's playerList
 				this.playerMap.put(newPlayer.getID(), newPlayer); // Add ID and player to Game's playerMap
-				
-				System.out.println("Player " + newPlayer.getID() + " has been added to the game!"); //Debug message
+
+				System.out.println("Player " + newPlayer.getID() + " has been added to the game!"); // Debug message
 
 			} else { // Player already in the game
 
@@ -175,17 +173,17 @@ public class Game { // Almost everything goes here! The main Game Class
 			Unit unitHolder;
 
 			for (int i = 0; i < partySize; i++) {
-				
+
 				unitHolder = entry.getValue().getParty().get(i);
-				
+
 				// TODO Revise position1 and position2 to Coordinate datatype
 				x = unitHolder.getPosition1(); // Position 1 of unit
 				y = unitHolder.getPosition2(); // Position 2 of unit
 
 				Coordinate tempCoordinate = new Coordinate(x, y);
-				
-				
-				// TODO if we have time we should adjust map event flags on Tile into a boolean array
+
+				// TODO if we have time we should adjust map event flags on Tile into a boolean
+				// array
 				if (gameMap.get(tempCoordinate).isRest()) { // Check if tile the unit on is a rest tile
 					unitHolder.setCurHP(MapTileEvents.restEvent(unitHolder));
 				} // Tile check end
@@ -319,11 +317,11 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void runBattle() {
 
-		if (!battleQueue.isEmpty()) { //If battleQueue is not empty
+		if (!battleQueue.isEmpty()) { // If battleQueue is not empty
 
 			Iterator<Battle> entry = this.battleQueue.iterator();
 
-			while (entry.hasNext()) { //Iterate through all battles on the queue
+			while (entry.hasNext()) { // Iterate through all battles on the queue
 
 				// Run the battle
 				entry.next().runBattle();
@@ -394,6 +392,10 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End printMap
 
+	public void updateMap() { // Call after each player moves
+
+	}
+
 	public Player findPlayerById(Long ID) {
 
 		return playerMap.get(ID); // Return the Player object mapped to specified ID
@@ -401,12 +403,12 @@ public class Game { // Almost everything goes here! The main Game Class
 	} // End of findPlayerById
 
 	public static void main(String[] args) { // Main for testing purposes
-		
+
 		Queue<Long> testQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
-		
-		testQueue.add((long) 123456789); //Add ID to testQueue
-		testQueue.add((long) 987654321); //Add ID to testQueue
-		
+
+		testQueue.add((long) 123456789); // Add ID to testQueue
+		testQueue.add((long) 987654321); // Add ID to testQueue
+
 		Game testGame = new Game(testQueue); // Create a new test game with Queue argument
 
 		testGame.generateMap(); // Generate the game map
