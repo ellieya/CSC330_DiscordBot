@@ -46,6 +46,74 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End of Game (One argument constructor)
 
+	protected void finalize() {
+
+		// Final Scores
+		int hawksScore = 0;
+		int owlsScore = 0;
+		int rootScore = 0;
+
+		Iterator<Map.Entry<Coordinate, Tile>> itr = this.gameMap.entrySet().iterator();
+
+		while (itr.hasNext()) // Iterate through all map tiles for ruling factions
+		{
+			Map.Entry<Coordinate, Tile> entry = itr.next();
+
+			if (entry.getValue().getFaction().equals("Hawks")) { // Ruling faction is Hawks
+
+				hawksScore++; // Increase Hawks score
+
+			} else if (entry.getValue().getFaction().equals("Owls")) { // Ruling faction is Owls
+
+				owlsScore++; // Increase Owls score
+
+			} else if (entry.getValue().getFaction().equals("Root")) { // Ruling faction is Root
+
+				rootScore++; // Increase Root score
+
+			}
+
+		} // End of map tile iteration
+
+		if (hawksScore > owlsScore && hawksScore > rootScore) {
+
+			System.out.println("Hawks win!"); // Hawks win
+
+		} else if (owlsScore > hawksScore && owlsScore > rootScore) {
+
+			System.out.println("Owls win!"); // Owls win
+
+		} else if (rootScore > hawksScore && rootScore > owlsScore) {
+
+			System.out.println("Root wins!"); // Root wins
+
+		} else if (hawksScore >= owlsScore && hawksScore > rootScore) {
+
+			System.out.println("Hawks and Owls win!"); // Hawks and Owls tie
+
+		} else if (hawksScore > owlsScore && hawksScore >= rootScore) {
+
+			System.out.println("Hawks and Root win!"); // Hawks and Root tie
+
+		} else if (owlsScore > hawksScore && owlsScore >= rootScore) {
+
+			System.out.println("Owls and Root win!"); // Owls and root tie
+
+		} else {
+
+			System.out.println("Everyone tied! You all win! (I guess?)"); // Everyone ties
+
+		}
+
+		System.out.println("Final Score:"); // Display final results
+		System.out.println("Hawks: " + hawksScore); // Display hawksScore
+		System.out.println("Owls: " + owlsScore); // Display owlsScore
+		System.out.println("Root: " + rootScore); // Display rootScore
+
+		System.out.println("Thanks for playing!"); // Say thank you
+
+	} // End of finalize
+
 	public void init() throws InterruptedException {
 
 		// Game object will run in 2 minutes! (Inherited from BotMain)?
@@ -251,6 +319,19 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void runBattle() {
 
+		if (!battleQueue.isEmpty()) { //If battleQueue is not empty
+
+			Iterator entry = this.battleQueue.iterator();
+
+			while (entry.hasNext()) { //Iterate through all battles on the queue
+
+				// Run the battle
+				// entry.next().runBattle();
+
+			}
+
+		}
+
 	} // End runBattle
 
 	public void restoreAP() { // restoreAP for every Player in-game
@@ -306,10 +387,10 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void printMap() { // Display the Map!
 
-		List sortedKeys = new ArrayList(gameMap.keySet());
-		Collections.sort(sortedKeys);
+		List sortedValues = new ArrayList(gameMap.values());
+		Collections.sort(sortedValues);
 
-		sortedKeys.forEach(System.out::println);
+		sortedValues.forEach(System.out::println);
 
 	} // End printMap
 
