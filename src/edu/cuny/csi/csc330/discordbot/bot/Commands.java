@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.main;
+package edu.cuny.csi.csc330.discordbot.bot;
 
 
 import java.util.ArrayDeque;

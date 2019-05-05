@@ -1,5 +1,5 @@
-package edu.cuny.csi.csc330.discordbot.main;
-import edu.cuny.csi.csc330.discordbot.main.Randomizer;
+package edu.cuny.csi.csc330.discordbot.game;
+import edu.cuny.csi.csc330.discordbot.game.Randomizer;
 
 
 public enum Direction {
