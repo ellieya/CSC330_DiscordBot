@@ -2,39 +2,79 @@ package edu.cuny.csi.csc330.discordbot.main;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 
 public class CreateEmbed {
 	
 	static EmbedBuilder embed;
 	
+	
+	
+	//TODO all of them should throw exception if args !even or > 0, except for the simple message version
+	
 	/**
-	 * Signature type #1
+	 * createEmbed - Type 1: Simple Message
+	 * 
+	 * @param type
+	 * 0 - Simple Message
+	 * 1 - Error
+	 * 
 	 * @param args
-	 * Element #0 is always interpreted as title
-	 * Element #1 is always interpreted as description
+	 * @return
 	 */
-	public static EmbedBuilder createEmbed(String[] args) {
+	
+	public static MessageEmbed make(int value, String message) {
 		
 		embed = new EmbedBuilder();
-		initDefault(args);
 		
-		return embed;
+		switch (value) {
+		case 1: // Error type
+			embed.setColor(0xff0000);
+			embed.setTitle("ERROR");
+			break;
+		default:
+			embed.setColor(0x15992b);
+			embed.setTitle("MESSAGE");
+			break;
+		}
+		embed.setDescription(message);
+		
+		return embed.build();
+	}
+	
+	public static MessageEmbed make(String[] args) {
+
+		embed = new EmbedBuilder();
+		
+		embed.setColor(0x42f4c2);
+		embed.setTitle(args[0]);
+		embed.setDescription(args[1]);
+		
+		
+		if (args.length > 2) {
+			for (int i = 2; i < args.length; i += 2) {
+				embed.addField(args[i], args[i+1], false);
+			}
+		}
+		
+		return embed.build();
 	}
 	
 	
 	/**
 	 * Signature type #2
-	 * Used to print user-related information
+	 * Used to print information with user footer
 	 * 
 	 * @param member
 	 * @param args
 	 * 
 	 */
 	
-	public static EmbedBuilder createEmbed(User user, String[] args) {
+	public static MessageEmbed make(User user, String[] args) {
 			
 			embed = new EmbedBuilder();
+			
 			embed.setTitle(args[0]);
 			embed.setDescription(args[1]);
 			embed.setColor(0x5f42f4);
@@ -46,10 +86,19 @@ public class CreateEmbed {
 			}
 			
 			embed.setFooter("Information provided for " + user.getName(), user.getAvatarUrl());
-			return embed;
+			return embed.build();
 		}
 	
-	public static EmbedBuilder createEmbed(Guild guild, String[] args) {
+	/**
+	 * Signature type #3
+	 * Used to print information with server footer
+	 * 
+	 * @param member
+	 * @param args
+	 * 
+	 */
+	
+	public static MessageEmbed make(Guild guild, String[] args) {
 		
 		embed = new EmbedBuilder();
 		embed.setTitle(args[0]);
@@ -63,21 +112,7 @@ public class CreateEmbed {
 		}
 		
 		embed.setFooter("Information provided from " + guild.getName() + " server", guild.getIconUrl());
-		return embed;
-	}
-	
-	// TODO this should throw exception if args !even or > 0
-	private static void initDefault(String[] args) {
-		embed.setTitle(args[0]);
-		embed.setDescription(args[1]);
-		embed.setColor(0x42f4c2);
-		
-		if (args.length > 2) {
-			for (int i = 2; i < args.length; i += 2) {
-				embed.addField(args[i], args[i+1], false);
-			}
-		}
-
+		return embed.build();
 	}
 	
 
