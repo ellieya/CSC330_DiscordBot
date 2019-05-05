@@ -39,8 +39,10 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		System.out.println("A new game has been created!");
 
-		this.playerQueue = playerQueue; // Set playerQueue equal to queue from BotMain
+		this.playerQueue.addAll(playerQueue); // Set playerQueue equal to queue from BotMain
 
+		populatePlayerList(); //Populate list of players
+		
 	} // End of Game (One argument constructor)
 
 	protected void finalize() {
@@ -119,7 +121,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void populatePlayerList() {
 
-		Iterator<Long> itr = playerQueue.iterator(); // We're going to iterate through queue of Player IDs
+		Iterator<Long> itr = this.playerQueue.iterator(); // We're going to iterate through queue of Player IDs
 
 		while (itr.hasNext()) { // While the queue still has IDs
 
@@ -129,6 +131,8 @@ public class Game { // Almost everything goes here! The main Game Class
 
 				this.playerList.add(newPlayer); // Add player to Game's playerList
 				this.playerMap.put(newPlayer.getID(), newPlayer); // Add ID and player to Game's playerMap
+				
+				System.out.println("Player " + newPlayer.getID() + " has been added to the game!"); //Debug message
 
 			} else { // Player already in the game
 
@@ -396,10 +400,14 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End of findPlayerById
 
-	public static void main(String[] args) { // Main (will execute when class is called. Should generate all starting
-												// instances of a new game.)
-
-		Game testGame = new Game(); // Create a new test game
+	public static void main(String[] args) { // Main for testing purposes
+		
+		Queue<Long> testQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
+		
+		testQueue.add((long) 123456789); //Add ID to testQueue
+		testQueue.add((long) 987654321); //Add ID to testQueue
+		
+		Game testGame = new Game(testQueue); // Create a new test game with Queue argument
 
 		testGame.generateMap(); // Generate the game map
 
