@@ -1,4 +1,6 @@
-package edu.cuny.csi.csc330.discordbot.game;
+package edu.cuny.csi.csc330.discordbot.bot;
+
+// TODO Revise position1 and position2 to Coordinate datatype
 
 public class Unit {
 
@@ -14,33 +16,37 @@ public class Unit {
 	private int position1; //Position 1 of the unit
 	private int position2; //Position 2 of the unit
 	private boolean inBattle; //Is the Unit in battle?
+	private Long playerID; //Identifies what player the unit belongs to
+	private boolean isDead; //Is the unit dead?
 
-	public Unit(String faction, int factionID) {
+	public Unit(String faction, int factionID, Long playerID) {
 		
 		this.faction = faction;
 		this.factionID = factionID;
-		inBattle = false;
+		this.playerID = playerID;
+		this.inBattle = false;
+		this.isDead = false;
 		generateStats();
 		
 		if (factionID == 1) { //Hawks start at (0,0)
 			
-			position1 = 1;
-			position2 = 1;
+			this.position1 = 1;
+			this.position2 = 1;
 			
 		} else if(factionID == 2) { //Owls start at (5,5)
 			
-			position1 = 5;
-			position2 = 5;
+			this.position1 = 5;
+			this.position2 = 5;
 			
 		} else if (factionID == 3) { //Root starts at (1,5)
 			
-			position1 = 1;
-			position2 = 5;
+			this.position1 = 1;
+			this.position2 = 5;
 			
 		} else { //Default
 			
-			position1 = 1;
-			position2 = 1;
+			this.position1 = 1;
+			this.position2 = 1;
 			
 		}
 		
@@ -140,6 +146,22 @@ public class Unit {
 
 	public void setInBattle(boolean inBattle) {
 		this.inBattle = inBattle;
+	}
+	
+	public Long getPlayerID() {
+		return playerID;
+	}
+
+	public void setPlayerID(Long playerID) {
+		this.playerID = playerID;
+	}
+
+	public boolean isDead() {
+		return isDead;
+	}
+
+	public void setDead(boolean isDead) {
+		this.isDead = isDead;
 	}
 
 	public void generateStats() { //Generate stats for unit and set them

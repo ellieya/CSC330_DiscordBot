@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.game;
+package edu.cuny.csi.csc330.discordbot.bot;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -9,6 +9,8 @@ public class Tile implements Comparable<Tile>{
 	private int position1; //Position 1 of tile 
 	private int position2; //Position 2 of tile
 	private String faction; //Current ruling faction (Will always be Unclaimed by default)
+	
+	// TODO if we have time we should adjust mapEvents into a boolean array
 	private boolean rest; //Can you rest on this tile?
 	
 	public Tile() {

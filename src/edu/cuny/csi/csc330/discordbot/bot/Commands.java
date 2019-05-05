@@ -106,11 +106,13 @@ public class Commands extends ListenerAdapter {
 	// TODO if there are less than 3 players on the gameQueue the game cannot run
 	private void startGame() {
 		//Create new instance of game that sends over ArrayQueue
+		Main.game = new Game(Main.playerQueue);
+		
 		//Switch game flag
 		Main.gameStarted = true;
 		
 		//Destroy playerQueue-related objects and replace with new empty 
-		Main.playerQueue = new ArrayDeque<User>();
+		Main.playerQueue = new ArrayDeque<Long>();
 		Main.queueMap = new HashMap<Long, User>();
 	}
 
@@ -122,7 +124,11 @@ public class Commands extends ListenerAdapter {
 		}
 		else {
 		
+		//Print ending message
+			Main.game.endGame();
+			
 		//Destroy game instance in Main by making it equal to null
+		Main.game = null;
 		
 		//Destroy gameLiveServer
 		Main.gameLiveServer = null;
@@ -190,12 +196,18 @@ public class Commands extends ListenerAdapter {
 			channel.sendMessage(CreateEmbed.make(1, "Game has not started!")).queue();
 		} else {
 
-			switch (value) {
-			case 0:
-				commandCheck();
-				break;
-			case 1:
-				commandAction();
+			if (Main.game.playerMap.get(user.getIdLong()) != null) {
+
+				switch (value) {
+				case 0:
+					commandCheck();
+					break;
+				case 1:
+					commandAction();
+				}
+			}
+			else {
+				channel.sendMessage(CreateEmbed.make(1, "You are not in the current game! Please wait for the next game...")).queue();
 			}
 		}
 	}
@@ -240,7 +252,7 @@ public class Commands extends ListenerAdapter {
 			//If the user has not already been queued, then put them into the playerQueue
 			//Otherwise, print error message
 			if (Main.queueMap.get(user.getIdLong()) == null) {
-				Main.playerQueue.add(user);
+				Main.playerQueue.add(user.getIdLong());
 				Main.queueMap.put(user.getIdLong(), user);
 				channel.sendMessage(CreateEmbed.make(0, member.getAsMention() + " has been added to the playerQueue!")).queue();
 			} else {
@@ -280,6 +292,13 @@ public class Commands extends ListenerAdapter {
 			case "turn":
 				commandCheckTurn();
 				break;
+			case "AP":
+			case "ap":
+				commandCheckAP();
+				break;
+			case "unit":
+				commandCheckUnit();
+				break;
 			default:
 				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
 			}
@@ -287,9 +306,10 @@ public class Commands extends ListenerAdapter {
 	}
 
 	private void commandCheckFaction() {
+		
 		user.openPrivateChannel().queue((channel) ->
 		{
-			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**FACTION**", "example text"})).queue();
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**FACTION**", "Your faction is " + Main.game.playerMap.get(user.getIdLong()).getFaction()})).queue();
 		});
 	}
 
@@ -320,8 +340,47 @@ public class Commands extends ListenerAdapter {
 	private void commandCheckTurnCount() {
 		user.openPrivateChannel().queue((channel) ->
 		{
-			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN COUNT**", "example text"})).queue();
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN COUNT**", "We are currently on Turn " + Main.game.getTurnCount() + ""})).queue();
 		});
 	}
 
+	
+	private void commandCheckAP() {
+		user.openPrivateChannel().queue((channel) ->
+		{
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**CHECK AP**", "You have " + Main.game.playerMap.get(user.getIdLong()).getAp() + " left!"})).queue();
+		});
+		
+	}
+	
+	private void commandCheckUnit() {
+		if (args.length < 3) {
+			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
+		} else {
+			switch (args[2]) {
+			case "list":
+				commandCheckUnitList();
+				break;
+			default:
+
+				// TODO this is really ugly can we fix it if we have time?
+				switch (args[2].charAt(0)) {
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+					commandCheckUnit();
+				default:
+					channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+				}
+			}
+		}
+		
+	}
+	
 }

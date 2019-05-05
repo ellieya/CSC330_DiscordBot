@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.game;
+package edu.cuny.csi.csc330.discordbot.bot;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,38 +15,38 @@ import java.util.Iterator;
 public class Game { // Almost everything goes here! The main Game Class
 
 	// Constants
-	private static int MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
+	private static int MAX_MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
 	private static int MAX_BATTLE_TURNS = 5;
 	private static int MAX_AP = 3; // Max action points for a user
 
 	// Other private data members
-	private Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
+	protected Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
 																				// units
-	private Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
+	protected Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
 
-	private Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For searching)
-	private ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
+	protected Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For
+																			// searching)
+	protected ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
 
-	private Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
-	private Queue<Battle> battleQueue = new LinkedList<Battle>();
-	private int turnCount;
+	protected Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
+	protected Queue<Battle> battleQueue = new LinkedList<Battle>();
+	protected int turnCount;
 
-	public Game() { // Game object has been created
-
-		System.out.println("A new game has been created!");
-
-	} // End of Game
+	private Game() {
+	}
 
 	public Game(Queue<Long> playerQueue) { // Game object has been created
 
 		System.out.println("A new game has been created!");
 
-		this.playerQueue = playerQueue; // Set playerQueue equal to queue from BotMain
+		this.playerQueue.addAll(playerQueue); // Set playerQueue equal to queue from BotMain
+
+		populatePlayerList(); // Populate list of players
 
 	} // End of Game (One argument constructor)
 
-	protected void finalize() {
+	public String endGame() {
 
 		// Final Scores
 		int hawksScore = 0;
@@ -105,14 +105,11 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		}
 
-		System.out.println("Final Score:"); // Display final results
-		System.out.println("Hawks: " + hawksScore); // Display hawksScore
-		System.out.println("Owls: " + owlsScore); // Display owlsScore
-		System.out.println("Root: " + rootScore); // Display rootScore
+		//Final message
+		return "Final Score:" + "\nHawks: " + hawksScore + "\nOwls: " + owlsScore + "\nRoot: " + rootScore
+				+ "\nThanks for playing!";
 
-		System.out.println("Thanks for playing!"); // Say thank you
-
-	} // End of finalize
+	} // End of endGame
 
 	public void init() throws InterruptedException {
 
@@ -122,7 +119,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void populatePlayerList() {
 
-		Iterator<Long> itr = playerQueue.iterator(); // We're going to iterate through queue of Player IDs
+		Iterator<Long> itr = this.playerQueue.iterator(); // We're going to iterate through queue of Player IDs
 
 		while (itr.hasNext()) { // While the queue still has IDs
 
@@ -132,6 +129,8 @@ public class Game { // Almost everything goes here! The main Game Class
 
 				this.playerList.add(newPlayer); // Add player to Game's playerList
 				this.playerMap.put(newPlayer.getID(), newPlayer); // Add ID and player to Game's playerMap
+
+				System.out.println("Player " + newPlayer.getID() + " has been added to the game!"); // Debug message
 
 			} else { // Player already in the game
 
@@ -171,23 +170,22 @@ public class Game { // Almost everything goes here! The main Game Class
 			Map.Entry<Long, Player> entry = itr.next();
 
 			partySize = entry.getValue().getParty().size(); // Get size of party
+			Unit unitHolder;
 
 			for (int i = 0; i < partySize; i++) {
 
-				x = entry.getValue().getParty().get(i).getPosition1(); // Position 1 of unit
-				y = entry.getValue().getParty().get(i).getPosition2(); // Position 2 of unit
+				unitHolder = entry.getValue().getParty().get(i);
+
+				// TODO Revise position1 and position2 to Coordinate datatype
+				x = unitHolder.getPosition1(); // Position 1 of unit
+				y = unitHolder.getPosition2(); // Position 2 of unit
 
 				Coordinate tempCoordinate = new Coordinate(x, y);
 
+				// TODO if we have time we should adjust map event flags on Tile into a boolean
+				// array
 				if (gameMap.get(tempCoordinate).isRest()) { // Check if tile the unit on is a rest tile
-
-					int unitHp = entry.getValue().getParty().get(i).getCurHP(); // Get Unit's current HP
-
-					double hpGain = Math.floor((entry.getValue().getParty().get(i).getHp()) / (2)); // Calculate
-																									// HP Gain
-
-					entry.getValue().getParty().get(i).setCurHP((int) (unitHp + hpGain)); // Set HP to current +
-																							// gain
+					unitHolder.setCurHP(MapTileEvents.restEvent(unitHolder));
 				} // Tile check end
 
 			} // End of party iteration
@@ -319,14 +317,14 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void runBattle() {
 
-		if (!battleQueue.isEmpty()) { //If battleQueue is not empty
+		if (!battleQueue.isEmpty()) { // If battleQueue is not empty
 
-			Iterator entry = this.battleQueue.iterator();
+			Iterator<Battle> entry = this.battleQueue.iterator();
 
-			while (entry.hasNext()) { //Iterate through all battles on the queue
+			while (entry.hasNext()) { // Iterate through all battles on the queue
 
 				// Run the battle
-				// entry.next().runBattle();
+				entry.next().runBattle();
 
 			}
 
@@ -369,9 +367,9 @@ public class Game { // Almost everything goes here! The main Game Class
 		int i = 1;
 		int j = 1;
 
-		for (i = 1; i <= MAP_RANGE; i++) { // Our map has dimensions 5 x 5
+		for (i = 1; i <= MAX_MAP_RANGE; i++) { // Our map has dimensions 5 x 5
 
-			for (j = 1; j <= MAP_RANGE; j++) {
+			for (j = 1; j <= MAX_MAP_RANGE; j++) {
 
 				Tile tempTile = new Tile(i, j); // Create a temporary Tile object
 
@@ -394,16 +392,24 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End printMap
 
+	public void updateMap() { // Call after each player moves
+
+	}
+
 	public Player findPlayerById(Long ID) {
 
 		return playerMap.get(ID); // Return the Player object mapped to specified ID
 
 	} // End of findPlayerById
 
-	public static void main(String[] args) { // Main (will execute when class is called. Should generate all starting
-												// instances of a new game.)
+	public static void main(String[] args) { // Main for testing purposes
 
-		Game testGame = new Game(); // Create a new test game
+		Queue<Long> testQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
+
+		testQueue.add((long) 123456789); // Add ID to testQueue
+		testQueue.add((long) 987654321); // Add ID to testQueue
+
+		Game testGame = new Game(testQueue); // Create a new test game with Queue argument
 
 		testGame.generateMap(); // Generate the game map
 

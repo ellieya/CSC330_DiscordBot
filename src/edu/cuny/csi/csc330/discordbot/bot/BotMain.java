@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.game;
+package edu.cuny.csi.csc330.discordbot.bot;
 
 import java.util.LinkedList;
 import java.util.Queue;
