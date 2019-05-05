@@ -72,8 +72,7 @@ public class Tile implements Comparable<Tile>{
 			return false;
 			
 		}
-		
-		
+	
 	}
 	
 	//hashCode and equals
@@ -95,11 +94,6 @@ public class Tile implements Comparable<Tile>{
 		if (getClass() != obj.getClass())
 			return false;
 		Tile other = (Tile) obj;
-		if (faction == null) {
-			if (other.faction != null)
-				return false;
-		} else if (!faction.equals(other.faction))
-			return false;
 		if (position1 != other.position1)
 			return false;
 		if (position2 != other.position2)
@@ -122,7 +116,6 @@ public class Tile implements Comparable<Tile>{
 			return 1;
 			
 		}
-		
 		
 	}
 
