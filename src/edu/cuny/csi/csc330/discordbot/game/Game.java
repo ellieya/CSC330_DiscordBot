@@ -45,7 +45,7 @@ public class Game { // Almost everything goes here! The main Game Class
 		
 	} // End of Game (One argument constructor)
 
-	protected void finalize() {
+	public void endGame() {
 
 		// Final Scores
 		int hawksScore = 0;
@@ -111,7 +111,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		System.out.println("Thanks for playing!"); // Say thank you
 
-	} // End of finalize
+	} // End of endGame
 
 	public void init() throws InterruptedException {
 
