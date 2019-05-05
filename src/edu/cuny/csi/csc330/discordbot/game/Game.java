@@ -1,4 +1,4 @@
-package edu.cuny.csi.csc330.discordbot.bot;
+package edu.cuny.csi.csc330.discordbot.game;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,16 +21,16 @@ public class Game { // Almost everything goes here! The main Game Class
 	private static int MAX_AP = 3; // Max action points for a user
 
 	// Other private data members
-	protected Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
+	private Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
 																				// units
-	protected Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
+	private Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
 
-	protected Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For searching)
-	protected ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
+	private Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For searching)
+	private ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
 
-	protected Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
-	protected Queue<Battle> battleQueue = new LinkedList<Battle>();
-	protected int turnCount;
+	private Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
+	private Queue<Battle> battleQueue = new LinkedList<Battle>();
+	private int turnCount;
 
 	private Game() {
 	}
@@ -45,7 +45,7 @@ public class Game { // Almost everything goes here! The main Game Class
 		
 	} // End of Game (One argument constructor)
 
-	public void endGame() {
+	protected void finalize() {
 
 		// Final Scores
 		int hawksScore = 0;
@@ -111,7 +111,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		System.out.println("Thanks for playing!"); // Say thank you
 
-	} // End of endGame
+	} // End of finalize
 
 	public void init() throws InterruptedException {
 

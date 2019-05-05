@@ -10,7 +10,6 @@ import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.User;
 
@@ -21,14 +20,15 @@ public class Main {
 	protected static boolean gameInit = false;
 	protected static boolean gameStarted = false;
 	protected static Guild gameLiveServer;
-	protected static Queue<User> playerQueue = new ArrayDeque<User>();
+	protected static Queue<Long> playerQueue = new ArrayDeque<Long>();
 	protected static Map<Long, User> queueMap = new HashMap<Long, User>(); //used to keep track of users that are already on the playerQueue
+	protected static Game game;
 
 	public static void main(String[] args) throws LoginException {
 
 		// To maintain privacy, send bot token through configurations
 		jda = new JDABuilder(AccountType.BOT).setToken(args[0]).build();
-		jda.getPresence().setGame(Game.playing("!help for command list"));
+		jda.getPresence().setGame(net.dv8tion.jda.core.entities.Game.playing("!help for command list"));
 
 		jda.addEventListener(new Commands());
 	}

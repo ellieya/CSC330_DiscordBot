@@ -106,11 +106,13 @@ public class Commands extends ListenerAdapter {
 	// TODO if there are less than 3 players on the gameQueue the game cannot run
 	private void startGame() {
 		//Create new instance of game that sends over ArrayQueue
+		Main.game = new Game(Main.playerQueue);
+		
 		//Switch game flag
 		Main.gameStarted = true;
 		
 		//Destroy playerQueue-related objects and replace with new empty 
-		Main.playerQueue = new ArrayDeque<User>();
+		Main.playerQueue = new ArrayDeque<Long>();
 		Main.queueMap = new HashMap<Long, User>();
 	}
 
@@ -122,7 +124,11 @@ public class Commands extends ListenerAdapter {
 		}
 		else {
 		
+		//Print ending message
+			Main.game.endGame();
+			
 		//Destroy game instance in Main by making it equal to null
+		Main.game = null;
 		
 		//Destroy gameLiveServer
 		Main.gameLiveServer = null;
@@ -240,7 +246,7 @@ public class Commands extends ListenerAdapter {
 			//If the user has not already been queued, then put them into the playerQueue
 			//Otherwise, print error message
 			if (Main.queueMap.get(user.getIdLong()) == null) {
-				Main.playerQueue.add(user);
+				Main.playerQueue.add(user.getIdLong());
 				Main.queueMap.put(user.getIdLong(), user);
 				channel.sendMessage(CreateEmbed.make(0, member.getAsMention() + " has been added to the playerQueue!")).queue();
 			} else {
@@ -287,9 +293,10 @@ public class Commands extends ListenerAdapter {
 	}
 
 	private void commandCheckFaction() {
+		
 		user.openPrivateChannel().queue((channel) ->
 		{
-			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**FACTION**", "example text"})).queue();
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**FACTION**", "Your faction is " + Main.game.playerMap.get(user.getIdLong()).getFaction()})).queue();
 		});
 	}
 
@@ -320,7 +327,7 @@ public class Commands extends ListenerAdapter {
 	private void commandCheckTurnCount() {
 		user.openPrivateChannel().queue((channel) ->
 		{
-			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN COUNT**", "example text"})).queue();
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN COUNT**", "We are currently on Turn " + Main.game.getTurnCount() + ""})).queue();
 		});
 	}
 
