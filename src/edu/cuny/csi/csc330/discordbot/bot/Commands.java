@@ -196,12 +196,18 @@ public class Commands extends ListenerAdapter {
 			channel.sendMessage(CreateEmbed.make(1, "Game has not started!")).queue();
 		} else {
 
-			switch (value) {
-			case 0:
-				commandCheck();
-				break;
-			case 1:
-				commandAction();
+			if (Main.game.playerMap.get(user.getIdLong()) != null) {
+
+				switch (value) {
+				case 0:
+					commandCheck();
+					break;
+				case 1:
+					commandAction();
+				}
+			}
+			else {
+				channel.sendMessage(CreateEmbed.make(1, "You are not in the current game! Please wait for the next game...")).queue();
 			}
 		}
 	}
@@ -286,6 +292,13 @@ public class Commands extends ListenerAdapter {
 			case "turn":
 				commandCheckTurn();
 				break;
+			case "AP":
+			case "ap":
+				commandCheckAP();
+				break;
+			case "unit":
+				commandCheckUnit();
+				break;
 			default:
 				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
 			}
@@ -331,4 +344,43 @@ public class Commands extends ListenerAdapter {
 		});
 	}
 
+	
+	private void commandCheckAP() {
+		user.openPrivateChannel().queue((channel) ->
+		{
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**CHECK AP**", "You have " + Main.game.playerMap.get(user.getIdLong()).getAp() + " left!"})).queue();
+		});
+		
+	}
+	
+	private void commandCheckUnit() {
+		if (args.length < 3) {
+			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
+		} else {
+			switch (args[2]) {
+			case "list":
+				commandCheckUnitList();
+				break;
+			default:
+
+				// TODO this is really ugly can we fix it if we have time?
+				switch (args[2].charAt(0)) {
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+					commandCheckUnit();
+				default:
+					channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+				}
+			}
+		}
+		
+	}
+	
 }
