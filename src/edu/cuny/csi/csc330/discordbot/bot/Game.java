@@ -105,7 +105,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		}
 
-		//Final message
+		// Final message
 		return "Final Score:" + "\nHawks: " + hawksScore + "\nOwls: " + owlsScore + "\nRoot: " + rootScore
 				+ "\nThanks for playing!";
 
@@ -146,11 +146,13 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		runAllMapEvents(); // Iterates through playerList for coordinates, check against map tile
 
-		checkBattle(); // Iterates through map
+		checkBattle(); // Iterates through map, pushes eligible situations onto the queue
 
-		runBattle();
+		runBattle(); // Run battles that are in the queue
 
-		restoreAP();
+		restoreAP(); // Restores the AP of all players in game
+		
+		updateMap(); // Update map tiles current ruling factions
 
 		this.turnCount++;
 
@@ -172,7 +174,7 @@ public class Game { // Almost everything goes here! The main Game Class
 			partySize = entry.getValue().getParty().size(); // Get size of party
 			Unit unitHolder;
 
-			for (int i = 0; i < partySize; i++) {
+			for (int i = 1; i <= partySize; i++) {
 
 				unitHolder = entry.getValue().getParty().get(i);
 
@@ -355,10 +357,20 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void moveUnit(Long ID, int partyMember, int x, int y) {
 
+		Coordinate tempCoordinate1 = new Coordinate(x, y); // Get Unit's current position
+
+		// Remove Unit from tile
+		this.gameMap.get(tempCoordinate1).removeUnit(this.findPlayerById(ID).getParty().get(partyMember));
+
 		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(x); // Set position 1
 		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(y); // Set position 2
 
 		this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
+
+		Coordinate tempCoordinate2 = new Coordinate(x, y); // Get Unit's new position
+
+		// Add Unit to tile
+		this.gameMap.get(tempCoordinate2).addUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
 	} // End moveUnit
 
@@ -394,7 +406,70 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void updateMap() { // Call after each player moves
 
-	}
+		int capacity;
+		String factionClaim = "";
+		int factionClaimID;
+		boolean opposingFaction;
+		boolean matchingFactionFound;
+		boolean multipleOpposingFaction;
+
+		Iterator<Map.Entry<Coordinate, Tile>> itr = this.gameMap.entrySet().iterator();
+
+		while (itr.hasNext()) // Iterate through all tiles and update ruling factions
+		{
+			Map.Entry<Coordinate, Tile> entry = itr.next();
+
+			ArrayList<Unit> unitsOnTile = new ArrayList<Unit>(); // Create new list
+
+			unitsOnTile.addAll(entry.getValue().getUnitList()); // Add all units on tile to list
+
+			// Help determine what faction the tile will have after update
+			factionClaim = "";
+			opposingFaction = false;
+			matchingFactionFound = false;
+			multipleOpposingFaction = false;
+			capacity = unitsOnTile.size();
+
+			for (int i = 1; i <= capacity; i++) { // Compare all unit factions on the tile to the tile's faction
+
+				// If the unit is not the same faction as the tile
+				if (!unitsOnTile.get(i).getFaction().equals(entry.getValue().getFaction())) {
+
+					// If no opposing factions have been found get
+					if (opposingFaction == false) {
+
+						factionClaim = unitsOnTile.get(i).getFaction(); // Set the faction who is claiming the tile
+						opposingFaction = true; // There is now an opposing faction
+
+						// If an opposing faction was already found and the unit is not of this faction
+					} else if (opposingFaction == true && !unitsOnTile.get(i).getFaction().equals(factionClaim)) {
+
+						multipleOpposingFaction = true; // There are multiple opposing factions
+
+					}
+
+				}
+
+				// If the unit is the same faction as the tile
+				if (unitsOnTile.get(i).getFaction().equals(entry.getValue().getFaction())) {
+
+					matchingFactionFound = true; // There is a faction on the tile who previously claimed it
+
+				}
+
+			} // End of unit compare loop
+
+			// Update tile (If there is an opposing faction and no other factions are
+			// present)
+			if (opposingFaction == true && multipleOpposingFaction == false && matchingFactionFound == false) {
+
+				entry.getValue().setFaction(factionClaim);
+
+			} // If these conditions aren't met, the tile will stay the same
+
+		} // End of map iteration
+
+	} // End updateMap
 
 	public Player findPlayerById(Long ID) {
 
