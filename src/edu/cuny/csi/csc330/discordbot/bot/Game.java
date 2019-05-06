@@ -17,7 +17,7 @@ public class Game { // Almost everything goes here! The main Game Class
 	// Constants
 	private static int MAX_MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
-	private static int MAX_BATTLE_TURNS = 5;
+	protected static int MAX_BATTLE_TURNS = 5;
 	private static int MAX_AP = 3; // Max action points for a user
 
 	// Other private data members
@@ -31,7 +31,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	protected Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
 	protected Queue<Battle> battleQueue = new LinkedList<Battle>();
-	protected int turnCount;
+	protected int turnCount = 1;
 
 	private Game() {
 	}
@@ -43,6 +43,7 @@ public class Game { // Almost everything goes here! The main Game Class
 		this.playerQueue.addAll(playerQueue); // Set playerQueue equal to queue from BotMain
 
 		populatePlayerList(); // Populate list of players
+		generateMap();
 
 	} // End of Game (One argument constructor)
 
@@ -105,7 +106,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		}
 
-		//Final message
+		// Final message
 		return "Final Score:" + "\nHawks: " + hawksScore + "\nOwls: " + owlsScore + "\nRoot: " + rootScore
 				+ "\nThanks for playing!";
 
@@ -144,15 +145,20 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void turnEnd() {
 
-		runAllMapEvents(); // Iterates through playerList for coordinates, check against map tile
+		System.out.println("I have been run - Pt: checkBattle");
+		//checkBattle(); // Iterates through map, pushes eligible situations onto the queue
 
-		checkBattle(); // Iterates through map
+		System.out.println("I have been run - Pt: runBattle");
+		runBattle(); // Run battles that are in the queue
 
-		runBattle();
+		System.out.println("I have been run - Pt: restoreAP");
+		restoreAP(); // Restores the AP of all players in game
+		
+		System.out.println("I have been run - Pt: updateMap");
+		updateMap(); // Update map tiles current ruling factions
 
-		restoreAP();
-
-		this.turnCount++;
+		turnCount++;
+		System.out.println("I have been run - finish all function");
 
 	} // End turnEnd
 
@@ -172,7 +178,7 @@ public class Game { // Almost everything goes here! The main Game Class
 			partySize = entry.getValue().getParty().size(); // Get size of party
 			Unit unitHolder;
 
-			for (int i = 0; i < partySize; i++) {
+			for (int i = 1; i <= partySize; i++) {
 
 				unitHolder = entry.getValue().getParty().get(i);
 
@@ -352,13 +358,27 @@ public class Game { // Almost everything goes here! The main Game Class
 		return turnCount;
 
 	} // End getTurnCount
-
+	
+	public boolean isGameDone() {
+		return turnCount == (MAX_GAME_TURNS + 1);
+	}
+	
 	public void moveUnit(Long ID, int partyMember, int x, int y) {
+
+		Coordinate tempCoordinate1 = new Coordinate(x, y); // Get Unit's current position
+
+		// Remove Unit from tile
+		this.gameMap.get(tempCoordinate1).removeUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
 		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(x); // Set position 1
 		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(y); // Set position 2
 
 		this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
+
+		Coordinate tempCoordinate2 = new Coordinate(x, y); // Get Unit's new position
+
+		// Add Unit to tile
+		this.gameMap.get(tempCoordinate2).addUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
 	} // End moveUnit
 
@@ -394,7 +414,70 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void updateMap() { // Call after each player moves
 
-	}
+		int capacity;
+		String factionClaim = "";
+		int factionClaimID;
+		boolean opposingFaction;
+		boolean matchingFactionFound;
+		boolean multipleOpposingFaction;
+
+		Iterator<Map.Entry<Coordinate, Tile>> itr = this.gameMap.entrySet().iterator();
+
+		while (itr.hasNext()) // Iterate through all tiles and update ruling factions
+		{
+			Map.Entry<Coordinate, Tile> entry = itr.next();
+
+			ArrayList<Unit> unitsOnTile = new ArrayList<Unit>(); // Create new list
+
+			unitsOnTile.addAll(entry.getValue().getUnitList()); // Add all units on tile to list
+
+			// Help determine what faction the tile will have after update
+			factionClaim = "";
+			opposingFaction = false;
+			matchingFactionFound = false;
+			multipleOpposingFaction = false;
+			capacity = unitsOnTile.size();
+
+			for (int i = 1; i <= capacity; i++) { // Compare all unit factions on the tile to the tile's faction
+
+				// If the unit is not the same faction as the tile
+				if (!unitsOnTile.get(i).getFaction().equals(entry.getValue().getFaction())) {
+
+					// If no opposing factions have been found get
+					if (opposingFaction == false) {
+
+						factionClaim = unitsOnTile.get(i).getFaction(); // Set the faction who is claiming the tile
+						opposingFaction = true; // There is now an opposing faction
+
+						// If an opposing faction was already found and the unit is not of this faction
+					} else if (opposingFaction == true && !unitsOnTile.get(i).getFaction().equals(factionClaim)) {
+
+						multipleOpposingFaction = true; // There are multiple opposing factions
+
+					}
+
+				}
+
+				// If the unit is the same faction as the tile
+				if (unitsOnTile.get(i).getFaction().equals(entry.getValue().getFaction())) {
+
+					matchingFactionFound = true; // There is a faction on the tile who previously claimed it
+
+				}
+
+			} // End of unit compare loop
+
+			// Update tile (If there is an opposing faction and no other factions are
+			// present)
+			if (opposingFaction == true && multipleOpposingFaction == false && matchingFactionFound == false) {
+
+				entry.getValue().setFaction(factionClaim);
+
+			} // If these conditions aren't met, the tile will stay the same
+
+		} // End of map iteration
+
+	} // End updateMap
 
 	public Player findPlayerById(Long ID) {
 

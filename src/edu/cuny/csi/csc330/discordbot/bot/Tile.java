@@ -1,5 +1,6 @@
 package edu.cuny.csi.csc330.discordbot.bot;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -9,6 +10,7 @@ public class Tile implements Comparable<Tile>{
 	private int position1; //Position 1 of tile 
 	private int position2; //Position 2 of tile
 	private String faction; //Current ruling faction (Will always be Unclaimed by default)
+	private ArrayList<Unit> unitList = new ArrayList<Unit>(); // List of all units currently on tile
 	
 	// TODO if we have time we should adjust mapEvents into a boolean array
 	private boolean rest; //Can you rest on this tile?
@@ -57,6 +59,22 @@ public class Tile implements Comparable<Tile>{
 	}
 	public void setRest(boolean rest) {
 		this.rest = rest;
+	}
+	
+	public ArrayList<Unit> getUnitList() {
+		return unitList;
+	}
+
+	public void setUnitList(ArrayList<Unit> unitList) {
+		this.unitList = unitList;
+	}
+	
+	public void removeUnit(Unit unit) {
+		this.unitList.remove(unit);
+	}
+	
+	public void addUnit(Unit unit) {
+		this.unitList.add(unit);
 	}
 
 	public boolean goesFirst(Tile otherTile) { //Used for sorting
