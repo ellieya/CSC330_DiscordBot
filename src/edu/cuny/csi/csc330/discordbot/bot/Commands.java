@@ -17,10 +17,9 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 public class Commands extends ListenerAdapter {
 	
 	private final String TOO_FEW_ARG_GENERIC = "Too few arguments in command!";
+	private final String DEAD_MESSAGE = "Your unit is dead!";
 	private final String COMMAND_DNE = "Command does not exist. Please refer to [commands list](https://docs.google.com/document/d/1WBoUiqq8vrASRE-_-BIeKkW0Gw-S6Cs3g6vtbOYLScM/edit?usp=sharing).";
 	private final int QUEUE_REQUIREMENT = 1; // TODO Change to 3 for deployment
-	
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	
 	private TextChannel channel;
 	private Guild guild;
@@ -115,7 +114,7 @@ public class Commands extends ListenerAdapter {
 	private boolean preStartCheck() {
 		if (Main.playerQueue.size() < QUEUE_REQUIREMENT) {
 			channel.sendMessage(CreateEmbed.make(1, "Game has less than "+ QUEUE_REQUIREMENT + " members on the queue. Cannot start.\nTime has been extended.")).queue(); {
-				Main.nextScheduledEvent = scheduler.schedule(runStartGame, 10, SECONDS);
+				Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10, SECONDS);
 			}
 			return false;
 		} else {
@@ -125,8 +124,8 @@ public class Commands extends ListenerAdapter {
 	
 	private void startGame() {
 		//If there is a scheduled event, cancel it
-		Main.nextScheduledEvent.cancel(true);
-		Main.nextScheduledEvent = null;
+		Main.nextScheduledGameEvent.cancel(true);
+		Main.nextScheduledGameEvent = null;
 		
 		//Create new instance of game that sends over ArrayQueue
 		Main.game = new Game(Main.playerQueue);
@@ -140,6 +139,10 @@ public class Commands extends ListenerAdapter {
 		//Destroy playerQueue-related objects and replace with new empty 
 		Main.playerQueue = new ArrayDeque<Long>();
 		Main.queueMap = new HashMap<Long, User>();
+		
+		//Run Main.turn()
+		Main.turn();
+		
 	}
 
 	private Runnable runStartGame = new Runnable() {
@@ -148,33 +151,6 @@ public class Commands extends ListenerAdapter {
 				startGame();
 		}
 	};
-	
-	private boolean killGame() {
-		
-		if (!Main.gameStarted) {
-			channel.sendMessage(CreateEmbed.make(1, "There is no game instance to kill...")).queue();
-			return false;
-		}
-		else {
-		
-		//Print ending message
-			Main.game.endGame();
-			
-		//Destroy game instance in Main by making it equal to null
-		Main.game = null;
-		
-		//Destroy gameLiveServer
-		Main.gameLiveServer = null;
-
-		//Switch game flag
-		Main.gameStarted = false;
-		
-		//Switch init flag
-		Main.gameInit = false;
-		
-		return true;
-		}
-	}
 	
 	private void ownerCommand(int value) {
 		
@@ -258,8 +234,9 @@ public class Commands extends ListenerAdapter {
 		if (!Main.gameInit && !Main.gameStarted) {
 			Main.gameInit = true;
 			Main.gameLiveServer = guild;
+			Main.gameLiveChannel = channel;
 			
-			Main.nextScheduledEvent = scheduler.schedule(runStartGame, 10, SECONDS);
+			Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10, SECONDS);
 			channel.sendMessage(CreateEmbed.make(0, "Command success! Game will be starting in 10 seconds from now.")).queue();
 		} else {
 			channel.sendMessage(CreateEmbed.make(1, "Init flag already up in " + Main.gameLiveServer.getName()
@@ -269,11 +246,11 @@ public class Commands extends ListenerAdapter {
 	
 	private void commandExtendTime() {
 		
-		long remainingTime = Main.nextScheduledEvent.getDelay(SECONDS);
+		long remainingTime = Main.nextScheduledGameEvent.getDelay(SECONDS);
 		
-		Main.nextScheduledEvent.cancel(true);
+		Main.nextScheduledGameEvent.cancel(true);
 		channel.sendMessage(CreateEmbed.make(0, "Command success! Time has been extended by 10 seconds.")).queue();
-		Main.nextScheduledEvent = scheduler.schedule(runStartGame, 10 + remainingTime, SECONDS);
+		Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10 + remainingTime, SECONDS);
 	}
 	
 	// TODO enforce that init flag must be up in order to start
@@ -286,7 +263,7 @@ public class Commands extends ListenerAdapter {
 	}
 	
 	private void commandForceKill() {
-		if (killGame())
+		if (Main.killGame())
 			channel.sendMessage(CreateEmbed.make(0, "Kill successful!")).queue();
 	}
 	
@@ -309,7 +286,7 @@ public class Commands extends ListenerAdapter {
 	
 	private void commandCancelInit() {
 		if (Main.gameInit) {
-			Main.nextScheduledEvent.cancel(true);
+			Main.nextScheduledGameEvent.cancel(true);
 			channel.sendMessage(CreateEmbed.make(0, "Queuing has been canceled.")).queue();
 		} else {
 			channel.sendMessage(CreateEmbed.make(1, "There is no queue to cancel...")).queue();
@@ -324,19 +301,17 @@ public class Commands extends ListenerAdapter {
 				"[Link to Commands](https://docs.google.com/document/d/1WBoUiqq8vrASRE-_-BIeKkW0Gw-S6Cs3g6vtbOYLScM/edit?usp=sharing)",
 				"**Development Documentation**",
 				"[Link to UML](https://drive.google.com/file/d/1u46U_4y0NRcFlcnnSxzvNUAra7sp3A28/view?usp=sharing) _(Save to drive & open with [draw.io](https://www.draw.io/) for clearer view)_\n"
-				+ "[Link to OneNote](https://cixcsicuny-my.sharepoint.com/:o:/g/personal/jiali_chen_cix_csi_cuny_edu/EgL1A0uM7INEl3Vxz1p9ufsBWpwMMRULkCqCiNiF94uuYg?e=PqjOwP)"
+				+ "[Link to OneNote](https://cixcsicuny-my.sharepoint.com/:o:/g/personal/jiali_chen_cix_csi_cuny_edu/EgL1A0uM7INEl3Vxz1p9ufsBWpwMMRULkCqCiNiF94uuYg?e=PqjOwP)\n"
+				+ "[Link to PPT](https://docs.google.com/presentation/d/1VRikxkKxs6pOuRElx6Q2X1VH6noINu65Qfdn1FVTVuk/edit?usp=sharing)" 
 				})).queue();
 	}
 
 	//TODO This one can only be finished when we have a game instance scheduled thing done
 	private void commandNextGame() {
-		if (Main.nextScheduledEvent != null)
-			channel.sendMessage(CreateEmbed.make(0, "The next game will be starting in " + Main.nextScheduledEvent.getDelay(SECONDS) + " seconds.")).queue();
+		if (Main.nextScheduledGameEvent != null)
+			channel.sendMessage(CreateEmbed.make(0, "The next game will be starting in " + Main.nextScheduledGameEvent.getDelay(SECONDS) + " seconds.")).queue();
 		else
 			channel.sendMessage(CreateEmbed.make(1, "There is no game scheduled at the moment.")).queue();
-	}
-
-	private void commandAction() {
 	}
 
 	private void commandCheck() {
@@ -391,14 +366,14 @@ public class Commands extends ListenerAdapter {
 	private void commandCheckTurnEnd() {
 		user.openPrivateChannel().queue((channel) ->
 		{
-			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN END**", "example text"})).queue();
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN END**", "Turn will end in " + Main.nextScheduledTurnEvent.getDelay(SECONDS) + " seconds."})).queue();
 		});
 	}
 	
 	private void commandCheckTurnCount() {
 		user.openPrivateChannel().queue((channel) ->
 		{
-			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN COUNT**", "We are currently on Turn " + Main.game.getTurnCount() + ""})).queue();
+			channel.sendMessage(CreateEmbed.make(guild, new String[] {"**TURN COUNT**", "We are currently on Turn " + Main.game.getTurnCount() + "."})).queue();
 		});
 	}
 
@@ -420,7 +395,6 @@ public class Commands extends ListenerAdapter {
 				break;
 			default:
 
-				// TODO this is really ugly can we fix it if we have time?
 				switch (args[2].charAt(0)) {
 				case '1':
 				case '2':
@@ -451,6 +425,11 @@ public class Commands extends ListenerAdapter {
 			holder += "**HP** - " + unit.getCurHP() + "/" + unit.getMaxHP() + "\n";
 			holder += "**ATK** - " + unit.getAtk() + "\n";
 			holder += "**DEF** - " + unit.getDef() + "\n";
+			holder += "\n";
+		} else {
+			holder += "**Party Member #" + (i + 1) + " - DEAD**\n";
+			holder += "**NAME** - " + unit.getName() + "\n";
+			holder += "Rest in pepperoni. \n";
 			holder += "\n";
 		}
 		
@@ -517,24 +496,110 @@ public class Commands extends ListenerAdapter {
 	// TODO - some of the code will probably end up becoming nother method
 	private void commandCheckUnitNumMapinfo(Unit target, int i) {
 		
-		String holder = "";
-		boolean activity = false;
-		Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
-		
-		if (Main.game.gameMap.get(unitCoordinate).isRest()) {
-			holder += "Rest";
-			activity = true;
+		if (!target.isDead()) {
+			String holder = "";
+			boolean activity = false;
+			Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
+			
+			if (Main.game.gameMap.get(unitCoordinate).isRest()) {
+				holder += "Rest";
+				activity = true;
+			}
+			
+			if (!activity) {
+				holder += "N/A";
+			}
+			
+			final String finalHolder = holder;
+			
+			user.openPrivateChannel().queue((channel) -> {
+				channel.sendMessage(
+					CreateEmbed.make(guild, new String[] { "**Party Member #" + (i+1) +  " Map Coordinates**",  "X: " + target.getPosition1() + "\nY: " + target.getPosition2(), "**Activites at this map position**", finalHolder})).queue();
+			});
+		} else {
+			user.openPrivateChannel().queue((channel) -> {
+				channel.sendMessage(CreateEmbed.make(1, DEAD_MESSAGE)).queue();
+			});
 		}
-		
-		if (!activity) {
-			holder += "N/A";
-		}
-		
-		final String finalHolder = holder;
-		
-		user.openPrivateChannel().queue((channel) -> {
-			channel.sendMessage(
-				CreateEmbed.make(guild, new String[] { "**Party Member #" + (i+1) +  " Map Coordinates**",  "X: " + target.getPosition1() + "\nY: " + target.getPosition2(), "**Activites at this map position**", finalHolder})).queue();
-		});
 	}
+
+	
+	// TODO need to debug
+	private void commandAction() {
+		if (args.length < 2) {
+			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(2))).queue();
+		} else {
+			switch (args[1].charAt(0)) {
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				commandActionNum();
+				break;
+			default:
+				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+			}
+		}
+	}
+
+	
+	// TODO need to debug
+	private void commandActionNum() {
+		//check user unit is dead or not
+		if (args.length < 3) {
+			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
+		} else {
+			try {
+				int i = Integer.parseInt(args[1]) - 1;
+				Unit target = player.getParty().get(i);
+
+				if (!target.isDead()) {
+					switch (args[2]) {
+					case "move":
+						commandActionNumMove(target);
+						break;
+					case "rest":
+						commandActionNumRest();
+						break;
+					}
+				} else {
+					user.openPrivateChannel().queue((channel) -> {
+						channel.sendMessage(CreateEmbed.make(1, DEAD_MESSAGE)).queue();
+					});
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				user.openPrivateChannel().queue((channel) -> {
+					channel.sendMessage(CreateEmbed.make(1, "Unit does not exist.")).queue();
+				});
+			}
+		}
+	}
+
+	
+	// TODO cannot be completed until movement is done
+	private void commandActionNumMove(Unit target) {
+		if (args.length < 5) {
+			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(5))).queue();
+		} else {
+			
+			// TODO THIS REQUIRES MOVEMENT FUNCTION TO BE COMPLETED
+		}
+	}
+
+	// TODO cannot be completed until movement & map revision is done
+	private void commandActionNumRest() {
+		
+	}
+	
+	
+	
+	
+	
 }
