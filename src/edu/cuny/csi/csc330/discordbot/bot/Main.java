@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.security.auth.login.LoginException;
 
@@ -23,6 +24,7 @@ public class Main {
 	protected static Queue<Long> playerQueue = new ArrayDeque<Long>();
 	protected static Map<Long, User> queueMap = new HashMap<Long, User>(); //used to keep track of users that are already on the playerQueue
 	protected static Game game;
+	protected static ScheduledFuture<?> nextScheduledEvent;
 
 	public static void main(String[] args) throws LoginException {
 
