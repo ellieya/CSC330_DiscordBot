@@ -146,14 +146,15 @@ public class Game { // Almost everything goes here! The main Game Class
 	public void turnEnd() {
 
 		System.out.println("I have been run - Pt: checkBattle");
-		//checkBattle(); // Iterates through map, pushes eligible situations onto the queue
+		// checkBattle(); // Iterates through map, pushes eligible situations onto the
+		// queue
 
 		System.out.println("I have been run - Pt: runBattle");
 		runBattle(); // Run battles that are in the queue
 
 		System.out.println("I have been run - Pt: restoreAP");
 		restoreAP(); // Restores the AP of all players in game
-		
+
 		System.out.println("I have been run - Pt: updateMap");
 		updateMap(); // Update map tiles current ruling factions
 
@@ -358,23 +359,90 @@ public class Game { // Almost everything goes here! The main Game Class
 		return turnCount;
 
 	} // End getTurnCount
-	
+
 	public boolean isGameDone() {
 		return turnCount == (MAX_GAME_TURNS + 1);
 	}
-	
+
 	public void moveUnit(Long ID, int partyMember, int x, int y) {
 
-		String playerFaction = this.findPlayerById(ID).getFaction(); //Used to identify tile restrictions
-		
-		
-		//Get unit's current position
+		String playerFaction = this.findPlayerById(ID).getFaction(); // Used to identify tile restrictions
+		String direction = "null"; // Used to correct tile restrictions
+
+		// Get unit's current position
 		int playerX = this.findPlayerById(ID).getParty().get(partyMember).getPosition1();
 		int playerY = this.findPlayerById(ID).getParty().get(partyMember).getPosition2();
-		
+
 		Coordinate tempCoordinate1 = new Coordinate(playerX, playerY); // Get current coordinates
 
-		// Remove Unit from tile
+		Coordinate tempCoordinate2 = new Coordinate(x, y); // Get Unit's new position
+
+		// If the unit tries to move into another faction's territory and they are not
+		// already next to it
+		if (this.gameMap.get(tempCoordinate2).getFaction() != playerFaction && (Math.abs(x - playerX) > 1)
+				|| (Math.abs(y - playerY) > 1)) {
+
+			// Move them back depending on the direction they were moving in until they are
+			// back on their own territory
+			while (this.gameMap.get(tempCoordinate2).getFaction() != playerFaction && !direction.equals("none")) {
+
+				// Direction they attempted to move in
+				if (x - playerX > 0) { // Target - Original > 0 (Player moving right)
+
+					direction = "right";
+					x--; // Move one tile to the left
+
+				} else if (x - playerX < 0) { // Target - Original < 0 (Player moving left)
+
+					direction = "left";
+					x++; // Move one tile to the right
+
+				} else if (y - playerY > 0) { // Target - Original > 0 (Player moving down)
+
+					direction = "down";
+					y--; // Move one tile up
+
+				} else if (y - playerY < 0) { // Target - Original < 0 (Player moving up)
+
+					direction = "up";
+					y++; // Move one tile down
+
+				} else if (x - playerX > 0 && y - playerY > 0) { // Player moving down-right
+
+					direction = "southeast";
+					x--; // Move one tile to the left
+					y--; // Move one tile up
+
+				} else if (x - playerX > 0 && y - playerY < 0) { // Player moving up-right
+
+					direction = "northeast";
+					x--; // Move one tile to the left
+					y++; // Move one tile down
+
+				} else if (x - playerX < 0 && y - playerY > 0) { // Player moving down-left
+
+					direction = "southwest";
+					x++; // Move one tile to the right
+					y--; // Move one tile up
+
+				} else if (x - playerX < 0 && y - playerY < 0) { // Player moving up-left
+
+					direction = "northwest";
+					x++; // Move one tile to the right
+					y++; // Move one tile down
+
+				} else { // Player didn't move
+
+					direction = "none";
+
+				}
+			}
+
+			tempCoordinate2 = new Coordinate(x, y); // Push them back 1 tile in the opposite direction
+
+		}
+
+		// Remove Unit from original tile
 		this.gameMap.get(tempCoordinate1).removeUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
 		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(x); // Set position 1
@@ -382,19 +450,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
 
-		Coordinate tempCoordinate2 = new Coordinate(x, y); // Get Unit's new position
-
-		
-		//When the player tries to move directly into another faction's territory
-		while(this.gameMap.get(tempCoordinate2).getFaction() != playerFaction) { //While target position is not of the current faction
-			
-			
-			
-		}
-		
-		
-		
-		// Add Unit to tile
+		// Add Unit to target tile
 		this.gameMap.get(tempCoordinate2).addUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
 	} // End moveUnit
