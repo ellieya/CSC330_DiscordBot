@@ -248,8 +248,8 @@ public class Game { // Almost everything goes here! The main Game Class
 
 					for (int j = 1; j <= partySize2; j++) { // Go through player's party
 
-						int playerX2 = entry2.getValue().getParty().get(i).getPosition1();
-						int playerY2 = entry2.getValue().getParty().get(i).getPosition2();
+						int playerX2 = entry2.getValue().getParty().get(j).getPosition1();
+						int playerY2 = entry2.getValue().getParty().get(j).getPosition2();
 
 						Coordinate tempCoordinate2 = new Coordinate(playerX2, playerY2);
 
@@ -365,7 +365,14 @@ public class Game { // Almost everything goes here! The main Game Class
 	
 	public void moveUnit(Long ID, int partyMember, int x, int y) {
 
-		Coordinate tempCoordinate1 = new Coordinate(x, y); // Get Unit's current position
+		String playerFaction = this.findPlayerById(ID).getFaction(); //Used to identify tile restrictions
+		
+		
+		//Get unit's current position
+		int playerX = this.findPlayerById(ID).getParty().get(partyMember).getPosition1();
+		int playerY = this.findPlayerById(ID).getParty().get(partyMember).getPosition2();
+		
+		Coordinate tempCoordinate1 = new Coordinate(playerX, playerY); // Get current coordinates
 
 		// Remove Unit from tile
 		this.gameMap.get(tempCoordinate1).removeUnit(this.findPlayerById(ID).getParty().get(partyMember));
@@ -377,6 +384,16 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		Coordinate tempCoordinate2 = new Coordinate(x, y); // Get Unit's new position
 
+		
+		//When the player tries to move directly into another faction's territory
+		while(this.gameMap.get(tempCoordinate2).getFaction() != playerFaction) { //While target position is not of the current faction
+			
+			
+			
+		}
+		
+		
+		
 		// Add Unit to tile
 		this.gameMap.get(tempCoordinate2).addUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
