@@ -17,7 +17,7 @@ public class Game { // Almost everything goes here! The main Game Class
 	// Constants
 	private static int MAX_MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
-	private static int MAX_BATTLE_TURNS = 5;
+	protected static int MAX_BATTLE_TURNS = 5;
 	private static int MAX_AP = 3; // Max action points for a user
 
 	// Other private data members
@@ -31,7 +31,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	protected Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
 	protected Queue<Battle> battleQueue = new LinkedList<Battle>();
-	protected int turnCount;
+	protected int turnCount = 1;
 
 	private Game() {
 	}
@@ -43,6 +43,7 @@ public class Game { // Almost everything goes here! The main Game Class
 		this.playerQueue.addAll(playerQueue); // Set playerQueue equal to queue from BotMain
 
 		populatePlayerList(); // Populate list of players
+		generateMap();
 
 	} // End of Game (One argument constructor)
 
@@ -144,17 +145,20 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void turnEnd() {
 
-		runAllMapEvents(); // Iterates through playerList for coordinates, check against map tile
+		System.out.println("I have been run - Pt: checkBattle");
+		//checkBattle(); // Iterates through map, pushes eligible situations onto the queue
 
-		checkBattle(); // Iterates through map, pushes eligible situations onto the queue
-
+		System.out.println("I have been run - Pt: runBattle");
 		runBattle(); // Run battles that are in the queue
 
+		System.out.println("I have been run - Pt: restoreAP");
 		restoreAP(); // Restores the AP of all players in game
 		
+		System.out.println("I have been run - Pt: updateMap");
 		updateMap(); // Update map tiles current ruling factions
 
-		this.turnCount++;
+		turnCount++;
+		System.out.println("I have been run - finish all function");
 
 	} // End turnEnd
 
@@ -354,7 +358,11 @@ public class Game { // Almost everything goes here! The main Game Class
 		return turnCount;
 
 	} // End getTurnCount
-
+	
+	public boolean isGameDone() {
+		return turnCount == (MAX_GAME_TURNS + 1);
+	}
+	
 	public void moveUnit(Long ID, int partyMember, int x, int y) {
 
 		Coordinate tempCoordinate1 = new Coordinate(x, y); // Get Unit's current position
