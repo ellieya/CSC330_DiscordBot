@@ -4,8 +4,6 @@ package edu.cuny.csi.csc330.discordbot.bot;
 import java.util.ArrayDeque;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
