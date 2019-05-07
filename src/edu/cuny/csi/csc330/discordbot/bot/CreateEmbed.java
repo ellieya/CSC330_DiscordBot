@@ -7,20 +7,44 @@ import net.dv8tion.jda.core.entities.User;
 
 public class CreateEmbed {
 	
+	//TODO all of them should throw exception if args !even or > 0, except for the simple message version
+	
 	static EmbedBuilder embed;
 	
 	
-	
-	//TODO all of them should throw exception if args !even or > 0, except for the simple message version
+	/**
+	 * Signature type #0
+	 * Takes String array of many
+	 * 
+	 * @param args
+	 * 
+	 */
+	public static MessageEmbed make(String[] args) {
+
+		embed = new EmbedBuilder();
+		
+		embed.setColor(0x42f4c2);
+		embed.setTitle(args[0]);
+		embed.setDescription(args[1]);
+		
+		
+		if (args.length > 2) {
+			for (int i = 2; i < args.length; i += 2) {
+				embed.addField(args[i], args[i+1], false);
+			}
+		}
+		
+		return embed.build();
+	}
 	
 	/**
 	 * createEmbed - Type 1: Simple Message
+	 * Key diff - Only takes ONE string
 	 * 
 	 * @param type
 	 * 0 - Simple Message
 	 * 1 - Error
 	 * 
-	 * @param args
 	 * @return
 	 */
 	
@@ -43,32 +67,10 @@ public class CreateEmbed {
 		return embed.build();
 	}
 	
-	public static MessageEmbed make(String[] args) {
-
-		embed = new EmbedBuilder();
-		
-		embed.setColor(0x42f4c2);
-		embed.setTitle(args[0]);
-		embed.setDescription(args[1]);
-		
-		
-		if (args.length > 2) {
-			for (int i = 2; i < args.length; i += 2) {
-				embed.addField(args[i], args[i+1], false);
-			}
-		}
-		
-		return embed.build();
-	}
-	
 	
 	/**
 	 * Signature type #2
 	 * Used to print information with user footer
-	 * 
-	 * @param member
-	 * @param args
-	 * 
 	 */
 	
 	public static MessageEmbed make(User user, String[] args) {
@@ -92,10 +94,6 @@ public class CreateEmbed {
 	/**
 	 * Signature type #3
 	 * Used to print information with server footer
-	 * 
-	 * @param member
-	 * @param args
-	 * 
 	 */
 	
 	public static MessageEmbed make(Guild guild, String[] args) {
