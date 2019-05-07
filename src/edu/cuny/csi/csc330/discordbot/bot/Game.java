@@ -19,6 +19,7 @@ public class Game { // Almost everything goes here! The main Game Class
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
 	protected static int MAX_BATTLE_TURNS = 5;
 	private static int MAX_AP = 3; // Max action points for a user
+	private static int MAX_PARTY = 2; //Max party members per player
 
 	// Other private data members
 	protected Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
@@ -185,16 +186,14 @@ public class Game { // Almost everything goes here! The main Game Class
 
 			}
 			
-			ArrayList<Unit> unitList = new ArrayList<Unit>(); // List of units to add to party
-			for (int i = 1; i <= newPlayer.getParty().size(); i++) { //Generate units
+			
+			for (int i = 0; i < MAX_PARTY; i++) { //Generate units
 				
 				Unit tempUnit = new Unit(playerFaction, newPlayer.getFactionID(), newPlayer.getID());
-				tempUnit.setName(i+1);
-				unitList.add(tempUnit);
+				newPlayer.getParty().add(i, tempUnit);
 				
 			}
 			
-			newPlayer.getParty().addAll(unitList); //Add units from list to party
 
 			if (!playerList.contains(newPlayer)) { // Make sure Player is not already in list
 
