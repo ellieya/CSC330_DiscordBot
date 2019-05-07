@@ -120,11 +120,70 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	public void populatePlayerList() {
 
+		//Used for determining player faction
+		//Mostly random, this ensures we do not end up in a game with players of only the same faction
+		String playerFaction = "";
+		boolean hawksGenerated = false;
+		boolean owlsGenerated = false;
+		boolean rootGenerated = false;
+		boolean allGenerated = false;
+
 		Iterator<Long> itr = this.playerQueue.iterator(); // We're going to iterate through queue of Player IDs
 
 		while (itr.hasNext()) { // While the queue still has IDs
 
 			Player newPlayer = new Player(itr.next()); // Create new player from ID in queue
+
+			playerFaction = newPlayer.generateFaction(); // Generate player faction
+
+			if (playerFaction.equals("Hawks")) { // Hawks have been generated
+
+				hawksGenerated = true;
+
+			} else if (playerFaction.equals("Owls")) { // Owls have been generated
+
+				owlsGenerated = true;
+
+			} else if (playerFaction.equals("Root")) { // Root has been generated
+
+				rootGenerated = true;
+
+			}
+
+			if (hawksGenerated == true && owlsGenerated == true && rootGenerated == true) { // Someone has joined every
+																							// faction
+				allGenerated = true;
+
+			}
+
+			// Hawks were already generated and every faction hasn't been generated yet
+			if (hawksGenerated == true && newPlayer.getFaction().equals("Hawks") && allGenerated == false) {
+
+				while (!playerFaction.equals("Hawks")) { // Re-generate faction
+
+					playerFaction = newPlayer.generateFaction();
+
+				}
+
+				// Owls were already generated and every faction hasn't been generated yet
+			} else if (owlsGenerated == true && newPlayer.getFaction().equals("Owls") && allGenerated == false) {
+
+				while (!playerFaction.equals("Owls")) { // Re-generate faction
+
+					playerFaction = newPlayer.generateFaction();
+
+				}
+
+				// Root was already generated and every faction hasn't been generated yet
+			} else if (rootGenerated == true && newPlayer.getFaction().equals("Root") && allGenerated == false) {
+
+				while (!playerFaction.equals("Root")) { // Re-generate faction
+
+					playerFaction = newPlayer.generateFaction();
+
+				}
+
+			}
 
 			if (!playerList.contains(newPlayer)) { // Make sure Player is not already in list
 
@@ -155,8 +214,8 @@ public class Game { // Almost everything goes here! The main Game Class
 		System.out.println("I have been run - Pt: restoreAP");
 		restoreAP(); // Restores the AP of all players in game
 
-		//System.out.println("I have been run - Pt: updateMap");
-		//updateMap(); // Update map tiles current ruling factions
+		// System.out.println("I have been run - Pt: updateMap");
+		// updateMap(); // Update map tiles current ruling factions
 
 		turnCount++;
 		System.out.println("I have been run - finish all function");
