@@ -4,27 +4,25 @@ import java.util.ArrayList;
 
 public class Player {
 
-	private String name; //Player name
-	private Long ID; //Player ID
-	private int ap; //Player action points
-	private String faction; //Faction the player is apart of
-	private int factionID; //Faction ID
-	protected ArrayList<Unit> party = new ArrayList<Unit>(); //Party of units 
-	private boolean inBattle; //Is the Player in battle?
+	private String name; // Player name
+	private Long ID; // Player ID
+	private int ap; // Player action points
+	private String faction; // Faction the player is apart of
+	private int factionID; // Faction ID
+	protected ArrayList<Unit> party = new ArrayList<Unit>(); // Party of units
 
-	public Player() {
-		
+	private Player() {
+
 	}
-	
+
 	public Player(Long ID) {
 
 		this.name = "Player " + ID;
 		this.ID = ID;
 		this.ap = 3;
-		this.inBattle = false;
-		
+
 	}
-	
+
 	public Player(String name, Long ID) {
 
 		this.name = name;
@@ -35,15 +33,14 @@ public class Player {
 		this.party.add(unit1);
 		this.party.add(unit2);
 		this.ap = 3;
-		this.inBattle = false;
-		
+
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	protected void setName(String name) {
 		this.name = name;
 	}
 
@@ -51,15 +48,15 @@ public class Player {
 		return faction;
 	}
 
-	public void setFaction(String faction) {
+	protected void setFaction(String faction) {
 		this.faction = faction;
 	}
-	
+
 	public Long getID() {
 		return ID;
 	}
 
-	public void setID(Long iD) {
+	protected void setID(Long iD) {
 		ID = iD;
 	}
 
@@ -67,7 +64,7 @@ public class Player {
 		return ap;
 	}
 
-	public void setAp(int ap) {
+	protected void setAp(int ap) {
 		this.ap = ap;
 	}
 
@@ -75,7 +72,7 @@ public class Player {
 		return factionID;
 	}
 
-	public void setFactionID(int factionID) {
+	protected void setFactionID(int factionID) {
 		this.factionID = factionID;
 	}
 
@@ -83,42 +80,38 @@ public class Player {
 		return party;
 	}
 
-	public void setParty(ArrayList<Unit> party) {
+	protected void setParty(ArrayList<Unit> party) {
 		this.party = party;
 	}
 
-	public boolean isInBattle() {
-		return inBattle;
-	}
-
-	public void setInBattle(boolean inBattle) {
-		this.inBattle = inBattle;
-	}
-
+	/**
+	 * 
+	 * Randomly return a generated faction based on number generated
+	 * 
+	 */
 	public String generateFaction() {
-		
-		int factionNum = Randomizer.generateInt(1, 3); //Generate a number from 1-3
-		
-		if(factionNum == 1) {
-			
-			this.faction = "Hawks"; //Player will be in Hawks
-			this.factionID = 1; //Set ID
-			
+
+		int factionNum = Randomizer.generateInt(1, 3); // Generate a number from 1-3
+
+		if (factionNum == 1) {
+
+			this.faction = "Hawks"; // Player will be in Hawks
+			this.factionID = 1; // Set ID
+
 		} else if (factionNum == 2) {
-			
-			this.faction = "Owls"; //Player will be in Owls
-			this.factionID = 2; //Set ID
-			
+
+			this.faction = "Owls"; // Player will be in Owls
+			this.factionID = 2; // Set ID
+
 		} else {
-			
-			this.faction = "Root"; //Player will be in Root
-			this.factionID = 3; //Set ID
-			
+
+			this.faction = "Root"; // Player will be in Root
+			this.factionID = 3; // Set ID
+
 		}
-		
+
 		return this.faction;
-		
-	} //End of generateFaction
-	
-	
+
+	} // End of generateFaction
+
 }

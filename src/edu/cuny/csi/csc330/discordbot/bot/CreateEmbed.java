@@ -7,11 +7,7 @@ import net.dv8tion.jda.core.entities.User;
 
 public class CreateEmbed {
 	
-	static EmbedBuilder embed;
-	
-	
-	
-	//TODO all of them should throw exception if args !even or > 0, except for the simple message version
+	public static EmbedBuilder embed;
 	
 	/**
 	 * createEmbed - Type 1: Simple Message
