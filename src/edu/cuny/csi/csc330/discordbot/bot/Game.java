@@ -155,8 +155,8 @@ public class Game { // Almost everything goes here! The main Game Class
 		System.out.println("I have been run - Pt: restoreAP");
 		restoreAP(); // Restores the AP of all players in game
 
-		System.out.println("I have been run - Pt: updateMap");
-		updateMap(); // Update map tiles current ruling factions
+		//System.out.println("I have been run - Pt: updateMap");
+		//updateMap(); // Update map tiles current ruling factions
 
 		turnCount++;
 		System.out.println("I have been run - finish all function");
@@ -455,6 +455,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		// Add Unit to target tile
 		this.gameMap.get(tempCoordinate2).addUnit(this.findPlayerById(ID).getParty().get(partyMember));
+		this.gameMap.get(tempCoordinate2).setFaction(playerFaction);
 
 	} // End moveUnit
 
