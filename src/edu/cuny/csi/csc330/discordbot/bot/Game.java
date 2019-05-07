@@ -184,6 +184,17 @@ public class Game { // Almost everything goes here! The main Game Class
 				}
 
 			}
+			
+			ArrayList<Unit> unitList = new ArrayList<Unit>(); // List of units to add to party
+			for (int i = 1; i <= newPlayer.getParty().size(); i++) { //Generate units
+				
+				Unit tempUnit = new Unit(playerFaction, newPlayer.getFactionID(), newPlayer.getID());
+				tempUnit.setName(i+1);
+				unitList.add(tempUnit);
+				
+			}
+			
+			newPlayer.getParty().addAll(unitList); //Add units from list to party
 
 			if (!playerList.contains(newPlayer)) { // Make sure Player is not already in list
 

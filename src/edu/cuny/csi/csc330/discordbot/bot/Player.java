@@ -20,12 +20,6 @@ public class Player {
 
 		this.name = "Player " + ID;
 		this.ID = ID;
-		Unit unit1 = new Unit(faction, factionID, ID);
-		Unit unit2 = new Unit(faction, factionID, ID);
-		this.party.add(unit1);
-		this.party.get(0).setName(party.size());
-		this.party.add(unit2);
-		this.party.get(1).setName(party.size());
 		this.ap = 3;
 		this.inBattle = false;
 		
