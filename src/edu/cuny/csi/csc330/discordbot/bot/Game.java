@@ -379,12 +379,15 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		// If the unit tries to move into another faction's territory and they are not
 		// already next to it
-		if (this.gameMap.get(tempCoordinate2).getFaction() != playerFaction && (Math.abs(x - playerX) > 1)
-				|| (Math.abs(y - playerY) > 1)) {
+		if (!this.gameMap.get(tempCoordinate2).getFaction().equals(playerFaction)
+				&& !this.gameMap.get(tempCoordinate2).getFaction().equals("Unclaimed")
+				&& ((Math.abs(x - playerX) > 1) || (Math.abs(y - playerY) > 1))) {
 
 			// Move them back depending on the direction they were moving in until they are
 			// back on their own territory
-			while (this.gameMap.get(tempCoordinate2).getFaction() != playerFaction && !direction.equals("none")) {
+			while (!this.gameMap.get(tempCoordinate2).getFaction().equals(playerFaction)
+					&& !this.gameMap.get(tempCoordinate2).getFaction().equals("Unclaimed")
+					&& !direction.equals("none")) {
 
 				// Direction they attempted to move in
 				if (x - playerX > 0) { // Target - Original > 0 (Player moving right)
@@ -489,7 +492,6 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		int capacity;
 		String factionClaim = "";
-		int factionClaimID;
 		boolean opposingFaction;
 		boolean matchingFactionFound;
 		boolean multipleOpposingFaction;
