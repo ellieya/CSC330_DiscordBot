@@ -20,13 +20,6 @@ public class Player {
 
 		this.name = "Player " + ID;
 		this.ID = ID;
-		generateFaction();
-		Unit unit1 = new Unit(faction, factionID, ID);
-		Unit unit2 = new Unit(faction, factionID, ID);
-		this.party.add(unit1);
-		this.party.get(0).setName(party.size());
-		this.party.add(unit2);
-		this.party.get(1).setName(party.size());
 		this.ap = 3;
 		this.inBattle = false;
 		
@@ -102,7 +95,7 @@ public class Player {
 		this.inBattle = inBattle;
 	}
 
-	public void generateFaction() {
+	public String generateFaction() {
 		
 		int factionNum = Randomizer.generateInt(1, 3); //Generate a number from 1-3
 		
@@ -122,6 +115,8 @@ public class Player {
 			this.factionID = 3; //Set ID
 			
 		}
+		
+		return this.faction;
 		
 	} //End of generateFaction
 	
