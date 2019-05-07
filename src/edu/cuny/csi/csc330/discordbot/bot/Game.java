@@ -17,26 +17,26 @@ public class Game { // Almost everything goes here! The main Game Class
 	// Constants
 	private static int MAX_MAP_RANGE = 5; // Map range (Max Height/Width of the gameMap)
 	private static int MAX_GAME_TURNS = 5; // Game ends after 5 turns
-	protected static int MAX_BATTLE_TURNS = 5;
 	private static int MAX_AP = 3; // Max action points for a user
-	private static int MAX_PARTY = 2; //Max party members per player
+	private static int MAX_PARTY = 2; // Max party members per player
 
 	// Other private data members
 	protected Map<Coordinate, Tile> gameMap = new HashMap<Coordinate, Tile>(); // The Game Map to be navigated by player
 																				// units
-	protected Set<Tile> gameSet = new HashSet<Tile>(); // Game Set for sorting
-
 	protected Map<Long, Player> playerMap = new HashMap<Long, Player>(); // Map of all players in the game (For
 																			// searching)
-	protected ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
-
-	protected Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
-	protected Queue<Battle> battleQueue = new LinkedList<Battle>();
-	protected int turnCount = 1;
+	private ArrayList<Player> playerList = new ArrayList<Player>(); // List of all players in the game (For sorting)
+	private Queue<Long> playerQueue = new LinkedList<Long>(); // List of Discord IDs of players who join
+	private int turnCount = 1;
 
 	private Game() {
 	}
 
+	/**
+	 * 
+	 * Player constructor takes playerQueue arguments and passes it through to the
+	 * playerQueue, then to the playerList, then the map is generated
+	 */
 	public Game(Queue<Long> playerQueue) { // Game object has been created
 
 		System.out.println("A new game has been created!");
@@ -48,8 +48,13 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End of Game (One argument constructor)
 
-	public String endGame() {
-		
+	/**
+	 * 
+	 * When end of the game is reached, will calculate and display results
+	 * 
+	 */
+	protected String endGame() {
+
 		String holder = "";
 
 		// Final Scores
@@ -108,7 +113,7 @@ public class Game { // Almost everything goes here! The main Game Class
 			holder += "Everyone tied! You all win! (I guess?)"; // Everyone ties
 
 		}
-		
+
 		holder += "\nFinal Score:" + "\nHawks: " + hawksScore + "\nOwls: " + owlsScore + "\nRoot: " + rootScore
 				+ "\nThanks for playing!";
 
@@ -117,14 +122,21 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End of endGame
 
-	public void populatePlayerList() {
+	/**
+	 * 
+	 * Populates the player list using the queue supplied in the constructor.
+	 * Factions are randomly generated, however there are certain restrictions to
+	 * ensure that factions are balanced in-game
+	 * 
+	 */
+	private void populatePlayerList() {
 
-		//Used for determining player faction
-		//Mostly random, this ensures we do not end up in a game with players of only the same faction
+		// Used for determining player faction
+		// Mostly random, this ensures we do not end up in a game with players of only
+		// the same faction
 		String playerFaction = "";
 		int playerFactionID;
-		boolean[] generatedFlag = {
-				false, // 0 = all generated?
+		boolean[] generatedFlag = { false, // 0 = all generated?
 				false, // 1 = hawks generated?
 				false, // 2 = owls generated?
 				false // 3 = root generate?
@@ -136,31 +148,29 @@ public class Game { // Almost everything goes here! The main Game Class
 
 			Player newPlayer = new Player(itr.next()); // Create new player from ID in queue
 
-			
-			//Make sure that at least 1 person in each faction
-			//Generate.
+			// Make sure that at least 1 person in each faction
+			// Generate.
 			do {
 				playerFaction = newPlayer.generateFaction(); // Generate player faction
 				playerFactionID = newPlayer.getFactionID();
 			}
-			//Have all been generated? If not, then if it matches a previously flagged id, regenerate.
+			// Have all been generated? If not, then if it matches a previously flagged id,
+			// regenerate.
 			while ((!generatedFlag[0]) && generatedFlag[playerFactionID]);
-			
-			//Finalize generated faction
+
+			// Finalize generated faction
 			generatedFlag[playerFactionID] = true;
-			
-			//Switch all generated flag when all flags are true
+
+			// Switch all generated flag when all flags are true
 			if (generatedFlag[1] && generatedFlag[2] && generatedFlag[3])
 				generatedFlag[0] = true;
-			
-			
-			for (int i = 0; i < MAX_PARTY; i++) { //Generate units
-				
+
+			for (int i = 0; i < MAX_PARTY; i++) { // Generate units
+
 				Unit tempUnit = new Unit(playerFaction, newPlayer.getFactionID(), newPlayer.getID());
 				newPlayer.getParty().add(i, tempUnit);
-				
+
 			}
-			
 
 			if (!playerList.contains(newPlayer)) { // Make sure Player is not already in list
 
@@ -179,14 +189,13 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End of populatePlayerList
 
-	public void turnEnd() {
-
-		System.out.println("I have been run - Pt: checkBattle");
-		// checkBattle(); // Iterates through map, pushes eligible situations onto the
-		// queue
-
-		System.out.println("I have been run - Pt: runBattle");
-		runBattle(); // Run battles that are in the queue
+	/**
+	 * 
+	 * When the end of the return is reached, we restore AP of all players and
+	 * increment turnCount
+	 * 
+	 */
+	protected void turnEnd() {
 
 		System.out.println("I have been run - Pt: restoreAP");
 		restoreAP(); // Restores the AP of all players in game
@@ -196,180 +205,12 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End turnEnd
 
-	public void runAllMapEvents() {
-
-		int partySize = 0;
-		int x;
-		int y;
-
-		Iterator<Map.Entry<Long, Player>> itr = this.playerMap.entrySet().iterator();
-
-		while (itr.hasNext()) // Go through all player objects
-		{
-
-			Map.Entry<Long, Player> entry = itr.next();
-
-			partySize = entry.getValue().getParty().size(); // Get size of party
-			Unit unitHolder;
-
-			for (int i = 1; i <= partySize; i++) {
-
-				unitHolder = entry.getValue().getParty().get(i);
-
-				x = unitHolder.getPosition1(); // Position 1 of unit
-				y = unitHolder.getPosition2(); // Position 2 of unit
-
-				Coordinate tempCoordinate = new Coordinate(x, y);
-
-				if (gameMap.get(tempCoordinate).isRest()) { // Check if tile the unit on is a rest tile
-					unitHolder.setCurHP(MapTileEvents.restEvent(unitHolder));
-				} // Tile check end
-
-			} // End of party iteration
-
-		} // Done iterating through tiles
-
-		this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
-
-	} // End runAllMapEvents
-
-	public void checkBattle() {
-
-		int partySize = 0;
-		int partySize2 = 0;
-		String friendlyFaction = "";
-		boolean noEnemy = true;
-
-		Iterator<Map.Entry<Long, Player>> itr = this.playerMap.entrySet().iterator();
-
-		while (itr.hasNext()) // Iterate through players
-		{
-			Map.Entry<Long, Player> entry = itr.next();
-			ArrayList<Player> battlePlayers = new ArrayList<Player>(); // Create new list of players
-			ArrayList<Unit> battleUnits = new ArrayList<Unit>(); // Create new list of units
-
-			partySize = entry.getValue().getParty().size(); // Get size of party
-
-			for (int i = 1; i <= partySize; i++) { // Go through player's party
-
-				int playerX = entry.getValue().getParty().get(i).getPosition1();
-				int playerY = entry.getValue().getParty().get(i).getPosition2();
-
-				// Get the coordinate the unit is on and all adjacent coordinates
-				Coordinate tempCoordinate = new Coordinate(playerX, playerY);
-				Coordinate adjCoordinate1 = new Coordinate(playerX, playerY - 1);
-				Coordinate adjCoordinate2 = new Coordinate(playerX, playerY + 1);
-				Coordinate adjCoordinate3 = new Coordinate(playerX + 1, playerY);
-				Coordinate adjCoordinate4 = new Coordinate(playerX - 1, playerY);
-
-				Tile unitTile1 = gameMap.get(tempCoordinate); // Get tile the unit is on
-				Tile adjTile1 = gameMap.get(adjCoordinate1);
-				Tile adjTile2 = gameMap.get(adjCoordinate2);
-				Tile adjTile3 = gameMap.get(adjCoordinate3);
-				Tile adjTile4 = gameMap.get(adjCoordinate4);
-
-				// Compare other players and their units
-				Iterator<Map.Entry<Long, Player>> itr2 = this.playerMap.entrySet().iterator();
-
-				while (itr2.hasNext()) // Iterate through other players to compare
-				{
-					Map.Entry<Long, Player> entry2 = itr2.next();
-
-					partySize2 = entry2.getValue().getParty().size(); // Get size of party
-
-					for (int j = 1; j <= partySize2; j++) { // Go through player's party
-
-						int playerX2 = entry2.getValue().getParty().get(j).getPosition1();
-						int playerY2 = entry2.getValue().getParty().get(j).getPosition2();
-
-						Coordinate tempCoordinate2 = new Coordinate(playerX2, playerY2);
-
-						Tile unitTile2 = gameMap.get(tempCoordinate2); // Get tile the unit is on
-
-						// If unit is on an adjacent tile to original unit or on the same tile
-						if (unitTile2.equals(unitTile1) || unitTile2.equals(adjTile1) || unitTile2.equals(adjTile2)
-								|| unitTile1.equals(adjTile3) || unitTile1.equals(adjTile4)) {
-
-							if (!entry.getValue().getParty().get(i).isInBattle()) { // If the original unit is not
-																					// already engaged in battle
-
-								if (!entry.getValue().isInBattle()) { // If original player is not in battle
-									entry.getValue().setInBattle(true);
-									battlePlayers.add(entry.getValue()); // Add original player to the list
-
-									friendlyFaction = entry.getValue().getFaction(); // Faction of original player
-
-								}
-
-								entry.getValue().getParty().get(i).setInBattle(true);
-								battleUnits.add(entry.getValue().getParty().get(i)); // Add original unit to the list
-
-							} // Add original unit case end
-
-							if (!entry2.getValue().getParty().get(j).isInBattle()) { // If opposing unit is
-
-								if (!entry2.getValue().isInBattle()) { // If opposing player is not in battle
-									entry2.getValue().setInBattle(true);
-									battlePlayers.add(entry2.getValue()); // Add opposing player to the list
-								}
-
-								entry2.getValue().getParty().get(j).setInBattle(true);
-								battleUnits.add(entry2.getValue().getParty().get(j)); // Add opposing unit to the list
-
-							}
-
-						} // Adjacent case end
-
-					} // End party2 iteration
-
-				} // Stop iterating through other players
-
-			} // End party iteration
-
-			if (!battleUnits.isEmpty()) {
-				for (int i = 1; i <= battleUnits.size(); i++) { // Make sure there is an enemy in units list
-
-					if (!battleUnits.get(i).getFaction().equals(friendlyFaction)) { // If you find a unit of the
-																					// opposite faction
-
-						noEnemy = false; // Set noEnemy flag to false
-
-					}
-				}
-			}
-
-			if (!battleUnits.isEmpty() && noEnemy == false) { // If units were sent into battle and there is an enemy
-																// faction present
-
-				Battle newBattle = new Battle(battlePlayers, battleUnits); // Create a new battle instance
-				this.battleQueue.add(newBattle); // Add it to the battleQueue
-
-			}
-
-			noEnemy = true; // Set flag back to true
-
-		} // Stop comparing player to others, move onto the next one
-
-	} // End checkBattle
-
-	public void runBattle() {
-
-		if (!battleQueue.isEmpty()) { // If battleQueue is not empty
-
-			Iterator<Battle> entry = this.battleQueue.iterator();
-
-			while (entry.hasNext()) { // Iterate through all battles on the queue
-
-				// Run the battle
-				entry.next().runBattle();
-
-			}
-
-		}
-
-	} // End runBattle
-
-	public void restoreAP() { // restoreAP for every Player in-game
+	/**
+	 * 
+	 * Restore AP of every player in-game
+	 * 
+	 */
+	private void restoreAP() { // restoreAP for every Player in-game
 
 		Iterator<Map.Entry<Long, Player>> itr = this.playerMap.entrySet().iterator();
 
@@ -390,105 +231,111 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End getTurnCount
 
-	public boolean isGameDone() {
+	protected boolean isGameDone() {
 		return turnCount == (MAX_GAME_TURNS + 1);
 	}
 
-	public boolean moveUnit(Long ID, int partyMember, int x, int y) {
-		
-		if (this.findPlayerById(ID).getAp() != 0) { 
+	/**
+	 * 
+	 * Takes argument of party member and x/y and moves player to designated tile
+	 * while also updating the faction of the tile to match the unit's
+	 * 
+	 */
+	protected boolean moveUnit(Long ID, int partyMember, int x, int y) {
+
+		if (this.findPlayerById(ID).getAp() != 0) {
 			String playerFaction = this.findPlayerById(ID).getFaction(); // Used to identify tile restrictions
 			String direction = "null"; // Used to correct tile restrictions
-	
+
 			// Get unit's current position
 			int playerX = this.findPlayerById(ID).getParty().get(partyMember).getPosition1();
 			int playerY = this.findPlayerById(ID).getParty().get(partyMember).getPosition2();
-	
+
 			Coordinate tempCoordinate1 = new Coordinate(playerX, playerY); // Get current coordinates
-	
+
 			Coordinate tempCoordinate2 = new Coordinate(x, y); // Get Unit's new position
-	
+
 			// If the unit tries to move into another faction's territory and they are not
 			// already next to it
 			if (!this.gameMap.get(tempCoordinate2).getFaction().equals(playerFaction)
 					&& !this.gameMap.get(tempCoordinate2).getFaction().equals("Unclaimed")
 					&& ((Math.abs(x - playerX) > 1) || (Math.abs(y - playerY) > 1))) {
-	
+
 				// Move them back depending on the direction they were moving in until they are
 				// back on their own territory
 				while (!this.gameMap.get(tempCoordinate2).getFaction().equals(playerFaction)
 						&& !this.gameMap.get(tempCoordinate2).getFaction().equals("Unclaimed")
 						&& !direction.equals("none")) {
-	
+
 					// Direction they attempted to move in
 					if (x - playerX > 0) { // Target - Original > 0 (Player moving right)
-	
+
 						direction = "right";
 						x--; // Move one tile to the left
-	
+
 					} else if (x - playerX < 0) { // Target - Original < 0 (Player moving left)
-	
+
 						direction = "left";
 						x++; // Move one tile to the right
-	
+
 					} else if (y - playerY > 0) { // Target - Original > 0 (Player moving down)
-	
+
 						direction = "down";
 						y--; // Move one tile up
-	
+
 					} else if (y - playerY < 0) { // Target - Original < 0 (Player moving up)
-	
+
 						direction = "up";
 						y++; // Move one tile down
-	
+
 					} else if (x - playerX > 0 && y - playerY > 0) { // Player moving down-right
-	
+
 						direction = "southeast";
 						x--; // Move one tile to the left
 						y--; // Move one tile up
-	
+
 					} else if (x - playerX > 0 && y - playerY < 0) { // Player moving up-right
-	
+
 						direction = "northeast";
 						x--; // Move one tile to the left
 						y++; // Move one tile down
-	
+
 					} else if (x - playerX < 0 && y - playerY > 0) { // Player moving down-left
-	
+
 						direction = "southwest";
 						x++; // Move one tile to the right
 						y--; // Move one tile up
-	
+
 					} else if (x - playerX < 0 && y - playerY < 0) { // Player moving up-left
-	
+
 						direction = "northwest";
 						x++; // Move one tile to the right
 						y++; // Move one tile down
-	
+
 					} else { // Player didn't move
-	
+
 						direction = "none";
-	
+
 					}
 				}
-	
+
 				tempCoordinate2 = new Coordinate(x, y); // Push them back 1 tile in the opposite direction
-	
+
 			}
-	
+
 			// Remove Unit from original tile
 			this.gameMap.get(tempCoordinate1).removeUnit(this.findPlayerById(ID).getParty().get(partyMember));
-	
+
 			this.findPlayerById(ID).getParty().get(partyMember).setPosition1(x); // Set position 1
 			this.findPlayerById(ID).getParty().get(partyMember).setPosition2(y); // Set position 2
-	
+
 			this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
-	
+
 			// Add Unit to target tile
 			this.gameMap.get(tempCoordinate2).addUnit(this.findPlayerById(ID).getParty().get(partyMember));
 			this.gameMap.get(tempCoordinate2).setFaction(playerFaction);
-			
-			//Decrement ap
+
+			// Decrement ap
 			this.findPlayerById(ID).setAp(this.findPlayerById(ID).getAp() - 1);
 			return true;
 		} else {
@@ -497,7 +344,7 @@ public class Game { // Almost everything goes here! The main Game Class
 
 	} // End moveUnit
 
-	public void generateMap() { // Generate Map Tiles!
+	private void generateMap() { // Generate Map Tiles!
 
 		int i = 1;
 		int j = 1;
@@ -511,23 +358,18 @@ public class Game { // Almost everything goes here! The main Game Class
 				Coordinate tempCoordinate = new Coordinate(i, j);
 
 				this.gameMap.put(tempCoordinate, tempTile); // Add Tile to map
-				this.gameSet.add(tempTile); // Add Tile to set
 
 			}
 		}
 
 	} // End generateMap
 
-	public void printMap() { // Display the Map!
-
-		List sortedValues = new ArrayList(gameMap.values());
-		Collections.sort(sortedValues);
-
-		sortedValues.forEach(System.out::println);
-
-	} // End printMap
-
-	public Player findPlayerById(Long ID) {
+	/**
+	 * 
+	 * Return instance of a player based on ID
+	 * 
+	 */
+	protected Player findPlayerById(Long ID) {
 
 		return playerMap.get(ID); // Return the Player object mapped to specified ID
 
@@ -543,8 +385,6 @@ public class Game { // Almost everything goes here! The main Game Class
 		Game testGame = new Game(testQueue); // Create a new test game with Queue argument
 
 		testGame.generateMap(); // Generate the game map
-
-		testGame.printMap(); // Display the game map
 
 	} // End Main
 

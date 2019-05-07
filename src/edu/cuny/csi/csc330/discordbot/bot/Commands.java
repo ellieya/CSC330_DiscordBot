@@ -427,15 +427,26 @@ public class Commands extends ListenerAdapter {
 		String holder = "";
 		
 		//Do not print any information if unit is dead
+		if (!unit.isDead()) {
 			holder += "**Party Member #" + (i + 1) + " - ALIVE**\n";
 			holder += "**NAME** - " + unit.getName() + "\n";
+			holder += "**HP** - " + unit.getCurHP() + "/" + unit.getMaxHP() + "\n";
+			holder += "**ATK** - " + unit.getAtk() + "\n";
+			holder += "**DEF** - " + unit.getDef() + "\n";
 			holder += "\n";
-			
+		} else {
+			holder += "**Party Member #" + (i + 1) + " - DEAD**\n";
+			holder += "**NAME** - " + unit.getName() + "\n";
+			holder += "Rest in pepperoni. \n";
+			holder += "\n";
+		}
+		
 		return holder;
 	}
 	
 	private void commandCheckUnitList() {
 		int partySize = player.getParty().size();
+		Unit unit;
 		String holder = "";
 		
 		for (int i = 0; i < partySize; i++) {
@@ -489,16 +500,22 @@ public class Commands extends ListenerAdapter {
 
 	private void commandCheckUnitNumMapinfo(Unit target, int i) {
 		
-		Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
-		Tile mapTile = Main.game.gameMap.get(unitCoordinate);
-
-		user.openPrivateChannel().queue((channel) -> {
-			channel.sendMessage(CreateEmbed.make(guild,
-					new String[] { "**Party Member #" + (i + 1) + " Map Coordinates**",
-							"X: " + target.getPosition1() + "\nY: " + target.getPosition2(), "**Tile Faction**",
-							"The tile's faction is " + mapTile.getFaction() + "." }))
-					.queue();
-		});
+		if (!target.isDead()) {
+			String holder = "";
+			boolean activity = false;
+			Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
+			Tile mapTile = Main.game.gameMap.get(unitCoordinate);
+			
+			
+			user.openPrivateChannel().queue((channel) -> {
+				channel.sendMessage(
+					CreateEmbed.make(guild, new String[] { "**Party Member #" + (i+1) +  " Map Coordinates**",  "X: " + target.getPosition1() + "\nY: " + target.getPosition2()})).queue();
+			});
+		} else {
+			user.openPrivateChannel().queue((channel) -> {
+				channel.sendMessage(CreateEmbed.make(1, ERR_DEAD_MESSAGE)).queue();
+			});
+		}
 	}
 
 	private void commandAction() {
@@ -524,16 +541,24 @@ public class Commands extends ListenerAdapter {
 	}
 
 	private void commandActionNum() {
-		// check user unit is dead or not
+		//check user unit is dead or not
 		if (args.length < 3) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
 		} else {
 			try {
 				int i = Integer.parseInt(args[1]) - 1;
-				switch (args[2]) {
-				case "move":
-					commandActionNumMove(i);
-					break;
+				Unit target = player.getParty().get(i);
+
+				if (!target.isDead()) {
+					switch (args[2]) {
+					case "move":
+						commandActionNumMove(i);
+						break;
+					}
+				} else {
+					user.openPrivateChannel().queue((channel) -> {
+						channel.sendMessage(CreateEmbed.make(1, ERR_DEAD_MESSAGE)).queue();
+					});
 				}
 
 			} catch (Exception e) {
