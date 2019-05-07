@@ -14,10 +14,18 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class Commands extends ListenerAdapter {
 	
-	private final String TOO_FEW_ARG_GENERIC = "Too few arguments in command!";
-	private final String DEAD_MESSAGE = "Your unit is dead!";
-	private final String COMMAND_DNE = "Command does not exist. Please refer to [commands list](https://docs.google.com/document/d/1WBoUiqq8vrASRE-_-BIeKkW0Gw-S6Cs3g6vtbOYLScM/edit?usp=sharing).";
-	private final int QUEUE_REQUIREMENT = 1; // TODO Change to 3 for deployment
+	private final String ERR_TOO_FEW_ARG_GENERIC = "Too few arguments in command!";
+	private final String ERR_DEAD_MESSAGE = "Your unit is dead!";
+	private final String ERR_COMMAND_DNE = "Command does not exist. Please refer to [commands list](https://docs.google.com/document/d/1WBoUiqq8vrASRE-_-BIeKkW0Gw-S6Cs3g6vtbOYLScM/edit?usp=sharing).";
+	private final String ERR_NO_GAME_INIT = "No game has been initialized!";
+	private final String ERR_GAME_ALREADY_STARTED = "Game has already started!";
+	private final String ERR_NO_GAME_START = "Game has not started!";
+	private final String ERR_NOT_IN_CURRENT_GAME = "You are not in the current game! Please wait for the next game...";
+	private final String ERR_UNIT_DNE = "Unit does not exist.";
+	private final String ERR_OOB = "Out of bounds!";
+	private final String ERR_NO_AP = "You are out of actions!";
+	
+	private final int QUEUE_REQUIREMENT = 3;
 	
 	private TextChannel channel;
 	private Guild guild;
@@ -88,7 +96,7 @@ public class Commands extends ListenerAdapter {
 			
 				
 			default:
-				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+				channel.sendMessage(CreateEmbed.make(1, ERR_COMMAND_DNE)).queue();
 			}
 		}
 	}
@@ -157,10 +165,6 @@ public class Commands extends ListenerAdapter {
 		if (member.isOwner()) {
 			switch (value) {
 			case 0:
-				
-				/* TODO
-				* init, extendtime, and forcestart should not be able to be used when game is started.
-				*/
 				commandInit();
 				break;
 			case 1:
@@ -204,9 +208,9 @@ public class Commands extends ListenerAdapter {
 	private void ingameCommand(int value) {
 
 		if (!Main.gameInit) {
-			channel.sendMessage(CreateEmbed.make(1, "Game has not been initialized!")).queue();
+			channel.sendMessage(CreateEmbed.make(1, ERR_NO_GAME_INIT)).queue();
 		} else if (!Main.gameStarted) {
-			channel.sendMessage(CreateEmbed.make(1, "Game has not started!")).queue();
+			channel.sendMessage(CreateEmbed.make(1, ERR_NO_GAME_START)).queue();
 		} else {
 
 			if (Main.game.playerMap.get(user.getIdLong()) != null) {
@@ -222,12 +226,11 @@ public class Commands extends ListenerAdapter {
 				}
 			}
 			else {
-				channel.sendMessage(CreateEmbed.make(1, "You are not in the current game! Please wait for the next game...")).queue();
+				channel.sendMessage(CreateEmbed.make(1, ERR_NOT_IN_CURRENT_GAME)).queue();
 			}
 		}
 	}
 
-	// TODO time game start
 	private void commandInit() {
 		if (!Main.gameInit && !Main.gameStarted) {
 			Main.gameInit = true;
@@ -244,19 +247,26 @@ public class Commands extends ListenerAdapter {
 	
 	private void commandExtendTime() {
 		
-		long remainingTime = Main.nextScheduledGameEvent.getDelay(SECONDS);
-		
-		Main.nextScheduledGameEvent.cancel(true);
-		channel.sendMessage(CreateEmbed.make(0, "Command success! Time has been extended by 10 seconds.")).queue();
-		Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10 + remainingTime, SECONDS);
+		if (!Main.gameStarted) {
+			
+			long remainingTime = Main.nextScheduledGameEvent.getDelay(SECONDS);
+			
+			Main.nextScheduledGameEvent.cancel(true);
+			channel.sendMessage(CreateEmbed.make(0, "Command success! Time has been extended by 10 seconds.")).queue();
+			Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10 + remainingTime, SECONDS);
+		} else {
+			channel.sendMessage(CreateEmbed.make(1, ERR_GAME_ALREADY_STARTED)).queue();
+		}
 	}
 	
-	// TODO enforce that init flag must be up in order to start
 	private void commandForceStart() {
-		if (!Main.gameStarted) {
+		if (Main.gameInit && !Main.gameStarted) {
 			startGame();
-		} else {
-			channel.sendMessage(CreateEmbed.make(1, "Game has already started!")).queue();
+		} else if (!Main.gameInit) {
+			channel.sendMessage(CreateEmbed.make(1, ERR_NO_GAME_INIT)).queue();
+		}
+		else {
+			channel.sendMessage(CreateEmbed.make(1, ERR_GAME_ALREADY_STARTED)).queue();
 		}
 	}
 	
@@ -267,7 +277,7 @@ public class Commands extends ListenerAdapter {
 	
 	private void commandJoin() {
 		if (!Main.gameInit) {
-			channel.sendMessage(CreateEmbed.make(1, "No game has been initialized!")).queue();
+			channel.sendMessage(CreateEmbed.make(1, ERR_NO_GAME_INIT)).queue();
 		} else {
 			
 			//If the user has not already been queued, then put them into the playerQueue
@@ -300,11 +310,11 @@ public class Commands extends ListenerAdapter {
 				"**Development Documentation**",
 				"[Link to UML](https://drive.google.com/file/d/1u46U_4y0NRcFlcnnSxzvNUAra7sp3A28/view?usp=sharing) _(Save to drive & open with [draw.io](https://www.draw.io/) for clearer view)_\n"
 				+ "[Link to OneNote](https://cixcsicuny-my.sharepoint.com/:o:/g/personal/jiali_chen_cix_csi_cuny_edu/EgL1A0uM7INEl3Vxz1p9ufsBWpwMMRULkCqCiNiF94uuYg?e=PqjOwP)\n"
-				+ "[Link to PPT](https://docs.google.com/presentation/d/1VRikxkKxs6pOuRElx6Q2X1VH6noINu65Qfdn1FVTVuk/edit?usp=sharing)" 
+				+ "[Link to PPT](https://docs.google.com/presentation/d/1VRikxkKxs6pOuRElx6Q2X1VH6noINu65Qfdn1FVTVuk/edit?usp=sharing)"
+				+ "[Link to Document](https://docs.google.com/document/d/1SWWJSwb7y5oTOTyxqz0nwcuiL1OM_RUAzmLpFRQrF0c/edit?ouid=109096553479654508712&usp=docs_home&ths=true)"
 				})).queue();
 	}
 
-	//TODO This one can only be finished when we have a game instance scheduled thing done
 	private void commandNextGame() {
 		if (Main.nextScheduledGameEvent != null)
 			channel.sendMessage(CreateEmbed.make(0, "The next game will be starting in " + Main.nextScheduledGameEvent.getDelay(SECONDS) + " seconds.")).queue();
@@ -331,7 +341,7 @@ public class Commands extends ListenerAdapter {
 				commandCheckUnit();
 				break;
 			default:
-				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+				channel.sendMessage(CreateEmbed.make(1, ERR_COMMAND_DNE)).queue();
 			}
 		}
 	}
@@ -356,7 +366,7 @@ public class Commands extends ListenerAdapter {
 				commandCheckTurnCount();
 				break;
 			default:
-				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+				channel.sendMessage(CreateEmbed.make(1, ERR_COMMAND_DNE)).queue();
 			}
 		}
 	}
@@ -406,7 +416,7 @@ public class Commands extends ListenerAdapter {
 					commandCheckUnitNum();
 					break;
 				default:
-					channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+					channel.sendMessage(CreateEmbed.make(1, ERR_COMMAND_DNE)).queue();
 				}
 			}
 		}
@@ -417,26 +427,15 @@ public class Commands extends ListenerAdapter {
 		String holder = "";
 		
 		//Do not print any information if unit is dead
-		if (!unit.isDead()) {
 			holder += "**Party Member #" + (i + 1) + " - ALIVE**\n";
 			holder += "**NAME** - " + unit.getName() + "\n";
-			holder += "**HP** - " + unit.getCurHP() + "/" + unit.getMaxHP() + "\n";
-			holder += "**ATK** - " + unit.getAtk() + "\n";
-			holder += "**DEF** - " + unit.getDef() + "\n";
 			holder += "\n";
-		} else {
-			holder += "**Party Member #" + (i + 1) + " - DEAD**\n";
-			holder += "**NAME** - " + unit.getName() + "\n";
-			holder += "Rest in pepperoni. \n";
-			holder += "\n";
-		}
-		
+			
 		return holder;
 	}
 	
 	private void commandCheckUnitList() {
 		int partySize = player.getParty().size();
-		Unit unit;
 		String holder = "";
 		
 		for (int i = 0; i < partySize; i++) {
@@ -453,7 +452,6 @@ public class Commands extends ListenerAdapter {
 		
 	}
 	
-	// TODO handle situation where unit is dead
 	private void commandCheckUnitNum() {
 		
 		// Check if unit exists before doing anything
@@ -473,7 +471,7 @@ public class Commands extends ListenerAdapter {
 					commandCheckUnitNumMapinfo(target, i);
 					break;
 				default:
-					channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+					channel.sendMessage(CreateEmbed.make(1, ERR_COMMAND_DNE)).queue();
 				}
 			}
 			
@@ -482,47 +480,27 @@ public class Commands extends ListenerAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 			user.openPrivateChannel().queue((channel) -> {
-				channel.sendMessage(CreateEmbed.make(1, "Unit does not exist.")).queue();
+				channel.sendMessage(CreateEmbed.make(1, ERR_UNIT_DNE)).queue();
 			});
 		}
 		
 
 	}
 
-	// TODO - This may need to be revised at a later time
-	// TODO - would be nice if it weren't explicitly just rest, for later implementation
-	// TODO - some of the code will probably end up becoming nother method
 	private void commandCheckUnitNumMapinfo(Unit target, int i) {
 		
-		if (!target.isDead()) {
-			String holder = "";
-			boolean activity = false;
-			Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
-			
-			if (Main.game.gameMap.get(unitCoordinate).isRest()) {
-				holder += "Rest";
-				activity = true;
-			}
-			
-			if (!activity) {
-				holder += "N/A";
-			}
-			
-			final String finalHolder = holder;
-			
-			user.openPrivateChannel().queue((channel) -> {
-				channel.sendMessage(
-					CreateEmbed.make(guild, new String[] { "**Party Member #" + (i+1) +  " Map Coordinates**",  "X: " + target.getPosition1() + "\nY: " + target.getPosition2(), "**Activites at this map position**", finalHolder})).queue();
-			});
-		} else {
-			user.openPrivateChannel().queue((channel) -> {
-				channel.sendMessage(CreateEmbed.make(1, DEAD_MESSAGE)).queue();
-			});
-		}
+		Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
+		Tile mapTile = Main.game.gameMap.get(unitCoordinate);
+
+		user.openPrivateChannel().queue((channel) -> {
+			channel.sendMessage(CreateEmbed.make(guild,
+					new String[] { "**Party Member #" + (i + 1) + " Map Coordinates**",
+							"X: " + target.getPosition1() + "\nY: " + target.getPosition2(), "**Tile Faction**",
+							"The tile's faction is " + mapTile.getFaction() + "." }))
+					.queue();
+		});
 	}
 
-	
-	// TODO need to debug
 	private void commandAction() {
 		if (args.length < 2) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(2))).queue();
@@ -540,60 +518,47 @@ public class Commands extends ListenerAdapter {
 				commandActionNum();
 				break;
 			default:
-				channel.sendMessage(CreateEmbed.make(1, COMMAND_DNE)).queue();
+				channel.sendMessage(CreateEmbed.make(1, ERR_COMMAND_DNE)).queue();
 			}
 		}
 	}
 
-	
-	// TODO need to debug
 	private void commandActionNum() {
-		//check user unit is dead or not
+		// check user unit is dead or not
 		if (args.length < 3) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
 		} else {
 			try {
 				int i = Integer.parseInt(args[1]) - 1;
-				Unit target = player.getParty().get(i);
-
-				if (!target.isDead()) {
-					switch (args[2]) {
-					case "move":
-						commandActionNumMove(target);
-						break;
-					case "rest":
-						commandActionNumRest();
-						break;
-					}
-				} else {
-					user.openPrivateChannel().queue((channel) -> {
-						channel.sendMessage(CreateEmbed.make(1, DEAD_MESSAGE)).queue();
-					});
+				switch (args[2]) {
+				case "move":
+					commandActionNumMove(i);
+					break;
 				}
 
 			} catch (Exception e) {
 				e.printStackTrace();
 				user.openPrivateChannel().queue((channel) -> {
-					channel.sendMessage(CreateEmbed.make(1, "Unit does not exist.")).queue();
+					channel.sendMessage(CreateEmbed.make(1, ERR_UNIT_DNE)).queue();
 				});
 			}
 		}
 	}
 
-	
-	// TODO cannot be completed until movement is done
-	private void commandActionNumMove(Unit target) {
+	private void commandActionNumMove(int partyNum) {
 		if (args.length < 5) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(5))).queue();
 		} else {
-			
-			// TODO THIS REQUIRES MOVEMENT FUNCTION TO BE COMPLETED
+			try {
+				if (!Main.game.moveUnit(user.getIdLong(), partyNum, Integer.parseInt(args[3]), Integer.parseInt(args[4]))) {
+					user.openPrivateChannel().queue((channel) -> {
+						channel.sendMessage(CreateEmbed.make(1, ERR_NO_AP)).queue();
+					});
+				}
+			} catch (NullPointerException e) {
+				channel.sendMessage(CreateEmbed.make(1, ERR_OOB)).queue();
+			}
 		}
-	}
-
-	// TODO cannot be completed until movement & map revision is done
-	private void commandActionNumRest() {
-		
 	}
 	
 	

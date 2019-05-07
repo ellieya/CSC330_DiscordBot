@@ -9,7 +9,6 @@ import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
@@ -20,11 +19,13 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
+
+
 public class Main {
 	public static JDA jda;
 	public static char prefix = '!';
 	
-	private static long TURN_TIME = 2;
+	private static long TURN_TIME = 90;
 	
 	protected final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	
