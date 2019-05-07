@@ -39,6 +39,11 @@ public class Main {
 	protected static ScheduledFuture<?> nextScheduledGameEvent;
 	protected static ScheduledFuture<?> nextScheduledTurnEvent;
 	
+	/**
+	 * Runs game.turnEnd().
+	 * If game is supposed to end, kills game.
+	 * If game is supposed to continue, prints current turn.
+	 */
 	private static Runnable runGameTurnEnd = new Runnable() {
 		public void run() {
 			game.turnEnd();
@@ -51,10 +56,20 @@ public class Main {
 		}
 	};
 	
+	/**
+	 * Schedules runGameTurnEnd to happen every TURN_TIME seconds
+	 */
 	protected static void turn() {
 		gameLiveChannel.sendMessage(CreateEmbed.make(0, "Turn " + game.getTurnCount() + "!")).queue();
 		nextScheduledTurnEvent = scheduler.scheduleAtFixedRate(runGameTurnEnd, TURN_TIME, TURN_TIME, SECONDS);
 	}
+	
+	/**
+	 * Attempts to kill game instance. If game instance DNE, prints error.
+	 * 
+	 * @return
+	 * Returns true if operation successful
+	 */
 	
 	protected static boolean killGame() {
 		

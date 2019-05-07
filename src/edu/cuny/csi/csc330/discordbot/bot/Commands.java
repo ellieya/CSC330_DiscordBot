@@ -25,6 +25,8 @@ public class Commands extends ListenerAdapter {
 	private final String ERR_OOB = "Out of bounds!";
 	private final String ERR_NO_AP = "You are out of actions!";
 	
+	private final long START_WAIT_TIME = 10;
+	
 	private final int QUEUE_REQUIREMENT = 3;
 	
 	private TextChannel channel;
@@ -34,6 +36,9 @@ public class Commands extends ListenerAdapter {
 	private String[] args;
 	private Player player;
 	
+	/**
+	 * Parses user input events and directs to proper methods
+	 */
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 		
 		channel = event.getChannel();
@@ -101,6 +106,15 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
+	/**
+	 * Used to generate error message when command requires X amount of arguments
+	 * 
+	 * @param neededLen
+	 * # of required arguments for this particular use case
+	 * 
+	 * @return
+	 * Returns compiled message
+	 */
 	private String genTooFewArgMsg(int neededLen) {
 		int curPosition = neededLen-1;
 		String holder = "Command '";
@@ -117,6 +131,12 @@ public class Commands extends ListenerAdapter {
 		return holder;
 	}
 	
+	/**
+	 * Check that game has minimum required in queue before starting
+	 * @return
+	 * true if game can start
+	 * false otherwise
+	 */
 	private boolean preStartCheck() {
 		if (Main.playerQueue.size() < QUEUE_REQUIREMENT) {
 			channel.sendMessage(CreateEmbed.make(1, "Game has less than "+ QUEUE_REQUIREMENT + " members on the queue. Cannot start.\nTime has been extended.")).queue(); {
@@ -128,6 +148,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
+	/**
+	 * Initiate a new game instance in Main
+	 */
 	private void startGame() {
 		//If there is a scheduled event, cancel it
 		Main.nextScheduledGameEvent.cancel(true);
@@ -150,7 +173,9 @@ public class Commands extends ListenerAdapter {
 		Main.turn();
 		
 	}
-
+	/**
+	 * Runnable for gameStart
+	 */
 	private Runnable runStartGame = new Runnable() {
 		public void run() {
 			if (preStartCheck())
@@ -158,6 +183,12 @@ public class Commands extends ListenerAdapter {
 		}
 	};
 	
+	/**
+	 * Commands that can only be run by server owner
+	 * 
+	 * @param value
+	 * Represents command "id", used to direct to different methods
+	 */
 	private void ownerCommand(int value) {
 		
 		String commandName = "!" + args[0];
@@ -184,6 +215,12 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
+	/**
+	 * Commands that can be used outside of the game
+	 * 
+	 * @param value
+	 * Represents command "id", used to direct to different methods
+	 */
 	private void outgameCommand(int value) {
 		
 		if (!Main.gameStarted || value == 0) {
@@ -205,6 +242,12 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
+	/**
+	 * Commands that can only be used inside the game
+	 * 
+	 * @param value
+	 * Represents command "id", used to direct to different methods
+	 */
 	private void ingameCommand(int value) {
 
 		if (!Main.gameInit) {
@@ -231,13 +274,16 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
+	/**
+	 * Schedule runStartGame to run in START_WAIT_TIME seconds
+	 */
 	private void commandInit() {
 		if (!Main.gameInit && !Main.gameStarted) {
 			Main.gameInit = true;
 			Main.gameLiveServer = guild;
 			Main.gameLiveChannel = channel;
 			
-			Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10, SECONDS);
+			Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, START_WAIT_TIME, SECONDS);
 			channel.sendMessage(CreateEmbed.make(0, "Command success! Game will be starting in 10 seconds from now.")).queue();
 		} else {
 			channel.sendMessage(CreateEmbed.make(1, "Init flag already up in " + Main.gameLiveServer.getName()
@@ -245,6 +291,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
+	/**
+	 * Reschedule runStartGame to run in remaining time on Timer + START_WAIT_TIME
+	 */
 	private void commandExtendTime() {
 		
 		if (!Main.gameStarted) {
@@ -253,12 +302,15 @@ public class Commands extends ListenerAdapter {
 			
 			Main.nextScheduledGameEvent.cancel(true);
 			channel.sendMessage(CreateEmbed.make(0, "Command success! Time has been extended by 10 seconds.")).queue();
-			Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, 10 + remainingTime, SECONDS);
+			Main.nextScheduledGameEvent = Main.scheduler.schedule(runStartGame, START_WAIT_TIME + remainingTime, SECONDS);
 		} else {
 			channel.sendMessage(CreateEmbed.make(1, ERR_GAME_ALREADY_STARTED)).queue();
 		}
 	}
 	
+	/**
+	 * Force game instance to be created regardless of queue size or timer
+	 */
 	private void commandForceStart() {
 		if (Main.gameInit && !Main.gameStarted) {
 			startGame();
@@ -270,11 +322,17 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
+	/**
+	 * Force game instance to be deleted
+	 */
 	private void commandForceKill() {
 		if (Main.killGame())
 			channel.sendMessage(CreateEmbed.make(0, "Kill successful!")).queue();
 	}
 	
+	/**
+	 * Attempt to join game. If already in queue, receive error.
+	 */
 	private void commandJoin() {
 		if (!Main.gameInit) {
 			channel.sendMessage(CreateEmbed.make(1, ERR_NO_GAME_INIT)).queue();
@@ -292,6 +350,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
+	/**
+	 * Force runStartGame to cancel
+	 */
 	private void commandCancelInit() {
 		if (Main.gameInit) {
 			Main.nextScheduledGameEvent.cancel(true);
@@ -301,6 +362,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
+	/**
+	 * Send message with helpful links
+	 */
 	private void commandHelp() {
 		channel.sendMessage(CreateEmbed.make(new String[] {
 				"** * * HELP * * **",
@@ -315,6 +379,9 @@ public class Commands extends ListenerAdapter {
 				})).queue();
 	}
 
+	/**
+	 * Check when next game will start
+	 */
 	private void commandNextGame() {
 		if (Main.nextScheduledGameEvent != null)
 			channel.sendMessage(CreateEmbed.make(0, "The next game will be starting in " + Main.nextScheduledGameEvent.getDelay(SECONDS) + " seconds.")).queue();
@@ -322,6 +389,9 @@ public class Commands extends ListenerAdapter {
 			channel.sendMessage(CreateEmbed.make(1, "There is no game scheduled at the moment.")).queue();
 	}
 
+	/**
+	 * Method branching for '!check' command
+	 */
 	private void commandCheck() {
 		if (args.length < 2) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(2))).queue();
@@ -346,6 +416,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
+	/**
+	 * Receive PM of what faction you are in
+	 */
 	private void commandCheckFaction() {
 		
 		user.openPrivateChannel().queue((channel) ->
@@ -354,6 +427,9 @@ public class Commands extends ListenerAdapter {
 		});
 	}
 
+	/**
+	 * Method branching for '!check turn' command
+	 */
 	private void commandCheckTurn() {
 		if (args.length < 3) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
@@ -371,6 +447,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
+	/**
+	 * Receive PM of how much time is left in current turn
+	 */
 	private void commandCheckTurnEnd() {
 		user.openPrivateChannel().queue((channel) ->
 		{
@@ -378,6 +457,9 @@ public class Commands extends ListenerAdapter {
 		});
 	}
 	
+	/**
+	 * Receive PM of what the current turn number is
+	 */
 	private void commandCheckTurnCount() {
 		user.openPrivateChannel().queue((channel) ->
 		{
@@ -385,6 +467,9 @@ public class Commands extends ListenerAdapter {
 		});
 	}
 
+	/**
+	 * Receive PM of how many actions you have left
+	 */
 	private void commandCheckAP() {
 		user.openPrivateChannel().queue((channel) ->
 		{
@@ -393,6 +478,9 @@ public class Commands extends ListenerAdapter {
 		
 	}
 	
+	/**
+	 * Method branching for '!check unit' command
+	 */
 	private void commandCheckUnit() {
 		if (args.length < 3) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(3))).queue();
@@ -423,6 +511,15 @@ public class Commands extends ListenerAdapter {
 		
 	}
 	
+	/**
+	 * Forms string to print unit information
+	 * @param unit
+	 * @param i
+	 * Party member position index #
+	 * 
+	 * @return
+	 * Returns formed string
+	 */
 	private String createUnitString(Unit unit, int i) {
 		String holder = "";
 		
@@ -434,6 +531,9 @@ public class Commands extends ListenerAdapter {
 		return holder;
 	}
 	
+	/**
+	 * Prints information about all units
+	 */
 	private void commandCheckUnitList() {
 		int partySize = player.getParty().size();
 		String holder = "";
@@ -452,6 +552,9 @@ public class Commands extends ListenerAdapter {
 		
 	}
 	
+	/**
+	 * Prints information about a certain unit
+	 */
 	private void commandCheckUnitNum() {
 		
 		// Check if unit exists before doing anything
@@ -487,6 +590,13 @@ public class Commands extends ListenerAdapter {
 
 	}
 
+	/**
+	 * Prints map information about a certain unit
+	 * 
+	 * @param target
+	 * @param i
+	 * Party member position index #
+	 */
 	private void commandCheckUnitNumMapinfo(Unit target, int i) {
 		
 		Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
@@ -500,7 +610,10 @@ public class Commands extends ListenerAdapter {
 					.queue();
 		});
 	}
-
+	
+	/**
+	 * Method branching for '!action' command
+	 */
 	private void commandAction() {
 		if (args.length < 2) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(2))).queue();
@@ -523,6 +636,9 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
+	/**
+	 * Method branching for '!action' num command. Queued for removal but it is literally 6:19 PM right now professor :(
+	 */
 	private void commandActionNum() {
 		// check user unit is dead or not
 		if (args.length < 3) {
@@ -539,12 +655,18 @@ public class Commands extends ListenerAdapter {
 			} catch (Exception e) {
 				e.printStackTrace();
 				user.openPrivateChannel().queue((channel) -> {
-					channel.sendMessage(CreateEmbed.make(1, ERR_UNIT_DNE)).queue();
-				});
+					channel.sendMessage(CreateEmbed.make(1, ERR_UNIT_DNE)).queue(); });
 			}
 		}
 	}
 
+	/**
+	 * Move unit of position 'partyNum' to provided coordinates, which are derived from user input on Discord
+	 * If coordinates are of inappropriate arg size, receive error message.
+	 * 
+	 * @param partyNum
+	 * Party position index
+	 */
 	private void commandActionNumMove(int partyNum) {
 		if (args.length < 5) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(5))).queue();
