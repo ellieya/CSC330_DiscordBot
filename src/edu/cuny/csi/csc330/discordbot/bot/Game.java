@@ -157,6 +157,8 @@ public class Game { // Almost everything goes here! The main Game Class
 
 		System.out.println("I have been run - Pt: updateMap");
 		updateMap(); // Update map tiles current ruling factions
+		
+		System.out.println("update map done");
 
 		turnCount++;
 		System.out.println("I have been run - finish all function");
