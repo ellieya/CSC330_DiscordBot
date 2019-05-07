@@ -449,7 +449,7 @@ public class Game { // Almost everything goes here! The main Game Class
 		this.gameMap.get(tempCoordinate1).removeUnit(this.findPlayerById(ID).getParty().get(partyMember));
 
 		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(x); // Set position 1
-		this.findPlayerById(ID).getParty().get(partyMember).setPosition1(y); // Set position 2
+		this.findPlayerById(ID).getParty().get(partyMember).setPosition2(y); // Set position 2
 
 		this.playerList = new ArrayList(playerMap.values()); // Update playerList collection
 
