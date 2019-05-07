@@ -14,7 +14,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class Commands extends ListenerAdapter {
 	
-	private final String TOO_FEW_ARG_GENERIC = "Too few arguments in command!";
+	private final String ERR_TOO_FEW_ARG_GENERIC = "Too few arguments in command!";
 	private final String ERR_DEAD_MESSAGE = "Your unit is dead!";
 	private final String ERR_COMMAND_DNE = "Command does not exist. Please refer to [commands list](https://docs.google.com/document/d/1WBoUiqq8vrASRE-_-BIeKkW0Gw-S6Cs3g6vtbOYLScM/edit?usp=sharing).";
 	private final String ERR_NO_GAME_INIT = "No game has been initialized!";
@@ -22,8 +22,10 @@ public class Commands extends ListenerAdapter {
 	private final String ERR_NO_GAME_START = "Game has not started!";
 	private final String ERR_NOT_IN_CURRENT_GAME = "You are not in the current game! Please wait for the next game...";
 	private final String ERR_UNIT_DNE = "Unit does not exist.";
+	private final String ERR_OOB = "Out of bounds!";
+	private final String ERR_NO_AP = "You are out of actions!";
 	
-	private final int QUEUE_REQUIREMENT = 1; // TODO Change to 3 for deployment
+	private final int QUEUE_REQUIREMENT = 3;
 	
 	private TextChannel channel;
 	private Guild guild;
@@ -163,10 +165,6 @@ public class Commands extends ListenerAdapter {
 		if (member.isOwner()) {
 			switch (value) {
 			case 0:
-				
-				/* TODO
-				* init, and forcestart should not be able to be used when game is started.
-				*/
 				commandInit();
 				break;
 			case 1:
@@ -261,7 +259,6 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 	
-	// TODO enforce that init flag must be up in order to start
 	private void commandForceStart() {
 		if (Main.gameInit && !Main.gameStarted) {
 			startGame();
@@ -466,7 +463,6 @@ public class Commands extends ListenerAdapter {
 		
 	}
 	
-	// TODO handle situation where unit is dead
 	private void commandCheckUnitNum() {
 		
 		// Check if unit exists before doing anything
@@ -502,30 +498,18 @@ public class Commands extends ListenerAdapter {
 
 	}
 
-	// TODO - This may need to be revised at a later time
-	// TODO - would be nice if it weren't explicitly just rest, for later implementation
-	// TODO - some of the code will probably end up becoming nother method
 	private void commandCheckUnitNumMapinfo(Unit target, int i) {
 		
 		if (!target.isDead()) {
 			String holder = "";
 			boolean activity = false;
 			Coordinate unitCoordinate = new Coordinate(target.getPosition1(), target.getPosition2());
+			Tile mapTile = Main.game.gameMap.get(unitCoordinate);
 			
-			if (Main.game.gameMap.get(unitCoordinate).isRest()) {
-				holder += "Rest";
-				activity = true;
-			}
-			
-			if (!activity) {
-				holder += "N/A";
-			}
-			
-			final String finalHolder = holder;
 			
 			user.openPrivateChannel().queue((channel) -> {
 				channel.sendMessage(
-					CreateEmbed.make(guild, new String[] { "**Party Member #" + (i+1) +  " Map Coordinates**",  "X: " + target.getPosition1() + "\nY: " + target.getPosition2(), "**Activites at this map position**", finalHolder})).queue();
+					CreateEmbed.make(guild, new String[] { "**Party Member #" + (i+1) +  " Map Coordinates**",  "X: " + target.getPosition1() + "\nY: " + target.getPosition2()})).queue();
 			});
 		} else {
 			user.openPrivateChannel().queue((channel) -> {
@@ -534,8 +518,6 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
-	
-	// TODO need to debug
 	private void commandAction() {
 		if (args.length < 2) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(2))).queue();
@@ -558,8 +540,6 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
-	
-	// TODO need to debug
 	private void commandActionNum() {
 		//check user unit is dead or not
 		if (args.length < 3) {
@@ -573,9 +553,6 @@ public class Commands extends ListenerAdapter {
 					switch (args[2]) {
 					case "move":
 						commandActionNumMove(i);
-						break;
-					case "rest":
-						commandActionNumRest();
 						break;
 					}
 				} else {
@@ -593,21 +570,20 @@ public class Commands extends ListenerAdapter {
 		}
 	}
 
-	
-	// TODO debugged
 	private void commandActionNumMove(int partyNum) {
 		if (args.length < 5) {
 			channel.sendMessage(CreateEmbed.make(1, genTooFewArgMsg(5))).queue();
 		} else {
-			System.out.println("Move is running");
-			Main.game.moveUnit(user.getIdLong(), partyNum, Integer.parseInt(args[3]), Integer.parseInt(args[4]));
-			System.out.println("Move has run");
+			try {
+				if (!Main.game.moveUnit(user.getIdLong(), partyNum, Integer.parseInt(args[3]), Integer.parseInt(args[4]))) {
+					user.openPrivateChannel().queue((channel) -> {
+						channel.sendMessage(CreateEmbed.make(1, ERR_NO_AP)).queue();
+					});
+				}
+			} catch (NullPointerException e) {
+				channel.sendMessage(CreateEmbed.make(1, ERR_OOB)).queue();
+			}
 		}
-	}
-
-	// TODO cannot be completed until movement & map revision is done
-	private void commandActionNumRest() {
-		
 	}
 	
 	

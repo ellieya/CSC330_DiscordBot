@@ -25,7 +25,7 @@ public class Main {
 	public static JDA jda;
 	public static char prefix = '!';
 	
-	private static long TURN_TIME = 60;
+	private static long TURN_TIME = 90;
 	
 	protected final static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	
